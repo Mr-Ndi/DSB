@@ -50,7 +50,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 
 func HandleLogin(res http.ResponseWriter, req *http.Request) {
 	type Credentials struct {
-		Username string `json:"name"`
+		Username string `json:"username"`
 		Password string `json:"password`
 	}
 
@@ -66,13 +66,30 @@ func HandleLogin(res http.ResponseWriter, req *http.Request) {
 	user, err := services.Login(credentials.Username, credentials.Password)
 
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusUnauthorized)
+		if err.Error() == "user not found" {
+			http.Error(res, "User not found", http.StatusNotFound)
+			return
+		}
+
+		if err.Error() == "invalid password" {
+			http.Error(res, "Invalid credentials", http.StatusUnauthorized)
+		}
+
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	response := struct {
+		Username  string `json:"username"`
+		Regnumber int    `json:"regnumber"`
+	}{
+		Username:  user.Username,
+		Regnumber: user.Regnumber,
 	}
 
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(res).Encode(user)
+	err = json.NewEncoder(res).Encode(response)
 
 	if err != nil {
 		http.Error(res, "Failed to encode response", http.StatusInternalServerError)

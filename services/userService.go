@@ -15,29 +15,31 @@ import (
 )
 
 func Login(username, password string) (*models.User, error) {
+
 	collection := config.DatabaseClient.Database("DSBox").Collection("user")
 
-	filter := bson.M{"username": username} // Filter to search by username
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
 
 	var user models.User
-	err := collection.FindOne(context.Background(), filter).Decode(&user)
+
+	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
 
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// Handle the case where no user is found
+		if err == mongo.ErrNoDocuments { // Corrected condition
+			fmt.Println("No match")
 			return nil, fmt.Errorf("user not found")
 		}
+
 		log.Printf("Error querying database: %v", err)
 		return nil, err
 	}
 
-	// Log the user (excluding sensitive info)
-	fmt.Printf("User found: %+v\n", user)
-
-	// Compare the hashed password with the provided password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
 	if err != nil {
-		return nil, fmt.Errorf("invalid password")
+		fmt.Println("Invalid credentials")
+		return nil, fmt.Errorf("invalid credentials")
 	}
 
 	return &user, nil
