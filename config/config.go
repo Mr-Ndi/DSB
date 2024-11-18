@@ -12,7 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func DatabaseConnection() *mongo.Client {
+var DatabaseClient *mongo.Client
+
+func DatabaseConnection() {
 
 	err := godotenv.Load()
 
@@ -45,5 +47,5 @@ func DatabaseConnection() *mongo.Client {
 
 	fmt.Println("Successfully connected to database !!")
 
-	return client
+	DatabaseClient = client
 }

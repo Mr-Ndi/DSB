@@ -2,36 +2,35 @@
 package controllers
 
 import (
-	"context"
 	"dsb/models"
+	"dsb/services"
 	"encoding/json"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateUser handles user registration.
-func CreateUser(w http.ResponseWriter, r *http.Request, userCollection *mongo.Collection) {
+func CreateUser(res http.ResponseWriter, req *http.Request) {
 	var user models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	err := json.NewDecoder(req.Body).Decode(&user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// Hashing user password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	user.Password = string(hashedPassword)
 
-	// Insert user into database
-	_, err = userCollection.InsertOne(context.TODO(), user)
+	inserted, err := services.AddUser(&user)
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -40,10 +39,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request, userCollection *mongo.Co
 		Username  string `json:"username"`
 		Regnumber int    `json:"regnumber"`
 	}{
-		Username:  user.Username,
-		Regnumber: user.Regnumber,
+		Username:  inserted.Username,
+		Regnumber: inserted.Regnumber,
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response) // Encode and send only safe fields
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusCreated)
+	json.NewEncoder(res).Encode(response) // Encode and send only safe fields
 }
