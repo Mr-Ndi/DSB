@@ -47,3 +47,35 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusCreated)
 	json.NewEncoder(res).Encode(response) // Encode and send only safe fields
 }
+
+func HandleLogin(res http.ResponseWriter, req *http.Request) {
+	type Credentials struct {
+		Username string `json:"name"`
+		Password string `json:"password`
+	}
+
+	var credentials Credentials
+
+	err := json.NewDecoder(req.Body).Decode(&credentials)
+
+	if err != nil {
+		http.Error(res, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	user, err := services.Login(credentials.Username, credentials.Password)
+
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(res).Encode(user)
+
+	if err != nil {
+		http.Error(res, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}
