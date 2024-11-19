@@ -21,5 +21,9 @@
 go.work
 go.work.sum
 
+# Air generated files
+tmp
+.air.toml
+
 # env file
 .env

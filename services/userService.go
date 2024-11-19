@@ -8,13 +8,14 @@ import (
 
 	"dsb/config"
 	"dsb/models"
+	"dsb/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Login(username, password string) (*models.User, error) {
+func Login(username, password string) (*models.LoginResponse, error) {
 
 	collection := config.DatabaseClient.Database("DSBox").Collection("user")
 
@@ -42,7 +43,21 @@ func Login(username, password string) (*models.User, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	return &user, nil
+	token, err := utils.GenerateJwtToken(username, user.Regnumber)
+
+	fmt.Println("TOKEN:: %v", token)
+	if err != nil {
+		fmt.Println("error while generating token: %v", err)
+		return nil, err
+	}
+
+	res := &models.LoginResponse{
+		Regnumber: user.Regnumber,
+		Username:  user.Username,
+		Token:     token,
+	}
+
+	return res, nil
 }
 
 func AddUser(user *models.User) (*models.User, error) {

@@ -79,17 +79,9 @@ func HandleLogin(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := struct {
-		Username  string `json:"username"`
-		Regnumber int    `json:"regnumber"`
-	}{
-		Username:  user.Username,
-		Regnumber: user.Regnumber,
-	}
-
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(res).Encode(response)
+	err = json.NewEncoder(res).Encode(user)
 
 	if err != nil {
 		http.Error(res, "Failed to encode response", http.StatusInternalServerError)

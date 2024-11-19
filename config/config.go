@@ -13,6 +13,7 @@ import (
 )
 
 var DatabaseClient *mongo.Client
+var JwtKey string
 
 func DatabaseConnection() {
 
@@ -22,7 +23,12 @@ func DatabaseConnection() {
 		log.Fatalf("Error loading .env file:%v", err)
 	}
 
+	JwtKey = os.Getenv("JWT_KEY")
 	dbURI := os.Getenv("DB_URI")
+
+	if JwtKey == "" {
+		log.Fatalf("Jwt secret key missing")
+	}
 
 	if dbURI == "" {
 		log.Fatalf("Connection string is empty")

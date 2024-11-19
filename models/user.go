@@ -11,3 +11,9 @@ type User struct {
 	Username  string             `bson:"username"`      // Username
 	Password  string             `bson:"password"`      // Password
 }
+
+type LoginResponse struct {
+	Regnumber int    `bson:"regnumber"`
+	Username  string `bson:"username"`
+	Token     string `bson:"token"`
+}
