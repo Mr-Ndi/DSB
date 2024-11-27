@@ -1,0 +1,93 @@
+openapi: 3.0.1
+info:
+  title: Gin API Example
+  description: A simple example of a Gin API with Swagger documentation
+  version: 1.0.0
+  contact:
+    name: Your Name
+    email: your-email@example.com
+    url: https://example.com
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /:
+    get:
+      summary: Returns a hello world message
+      description: A simple endpoint to test the Gin API
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Hello, World!"
+  /post:
+    post:
+      summary: Accepts JSON data
+      description: Accepts a POST request with JSON data and returns the received data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John"
+                age:
+                  type: integer
+                  example: 30
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Data received"
+                  data:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: "John"
+                      age:
+                        type: integer
+                        example: 30
+        '400':
+          description: Bad Request (Invalid JSON)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Invalid request"
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+      required:
+        - name
+        - age
