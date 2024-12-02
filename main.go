@@ -7,10 +7,13 @@ import (
 	"time"
 
 	"dsb/config"
+	_ "dsb/docs" // Import your docs package for swagger
 	"dsb/routes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func RequestLogger(c *gin.Context) {
@@ -39,6 +42,9 @@ func main() {
 
 	// Apply request logger middleware
 	r.Use(RequestLogger)
+
+	// Serve Swagger UI (ensure this is only registered once)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Get port from environment or default to 8080
 	port := os.Getenv("PORT")

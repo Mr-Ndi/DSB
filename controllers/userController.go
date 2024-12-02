@@ -9,7 +9,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Credentials represents the structure for user login credentials.
+type Credentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // CreateUser handles user registration.
+// @Summary Create a new user
+// @Description Create a new user with username, registration number and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User data"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /user [post]
 func CreateUser(c *gin.Context) {
 	var user models.User
 	// Bind incoming JSON to the user model
@@ -47,13 +63,19 @@ func CreateUser(c *gin.Context) {
 }
 
 // HandleLogin handles user login.
+// @Summary User login
+// @Description Login using username and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body Credentials true "User credentials"
+// @Success 200 {object} models.User
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /login [post]
 func HandleLogin(c *gin.Context) {
-	// Define a struct for user credentials
-	type Credentials struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
 	var credentials Credentials
 	// Bind incoming JSON to credentials struct
 	if err := c.ShouldBindJSON(&credentials); err != nil {
@@ -74,11 +96,9 @@ func HandleLogin(c *gin.Context) {
 			return
 		}
 
-		// Handle unexpected errors
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Send back the user information
 	c.JSON(http.StatusOK, user)
 }
