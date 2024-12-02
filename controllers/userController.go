@@ -1,40 +1,39 @@
-// controllers/userController.go
 package controllers
 
 import (
 	"dsb/models"
 	"dsb/services"
-	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateUser handles user registration.
-func CreateUser(res http.ResponseWriter, req *http.Request) {
+func CreateUser(c *gin.Context) {
 	var user models.User
-	err := json.NewDecoder(req.Body).Decode(&user)
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+	// Bind incoming JSON to the user model
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Hashing user password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	user.Password = string(hashedPassword)
 
+	// Add user to database (via service)
 	inserted, err := services.AddUser(&user)
-
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Create a response struct to exclude sensitive information
+	// Create response struct excluding sensitive information
 	response := struct {
 		Username  string `json:"username"`
 		Regnumber int    `json:"regnumber"`
@@ -43,48 +42,43 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 		Regnumber: inserted.Regnumber,
 	}
 
-	res.Header().Set("Content-Type", "application/json")
-	res.WriteHeader(http.StatusCreated)
-	json.NewEncoder(res).Encode(response) // Encode and send only safe fields
+	// Respond with a safe subset of the user data
+	c.JSON(http.StatusCreated, response)
 }
 
-func HandleLogin(res http.ResponseWriter, req *http.Request) {
+// HandleLogin handles user login.
+func HandleLogin(c *gin.Context) {
+	// Define a struct for user credentials
 	type Credentials struct {
 		Username string `json:"username"`
-		Password string `json:"password`
+		Password string `json:"password"`
 	}
 
 	var credentials Credentials
-
-	err := json.NewDecoder(req.Body).Decode(&credentials)
-
-	if err != nil {
-		http.Error(res, "Invalid request body", http.StatusBadRequest)
+	// Bind incoming JSON to credentials struct
+	if err := c.ShouldBindJSON(&credentials); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
+	// Call the service to validate credentials
 	user, err := services.Login(credentials.Username, credentials.Password)
-
 	if err != nil {
 		if err.Error() == "user not found" {
-			http.Error(res, "User not found", http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
 		}
 
 		if err.Error() == "invalid password" {
-			http.Error(res, "Invalid credentials", http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			return
 		}
 
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		// Handle unexpected errors
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	res.Header().Set("Content-Type", "application/json")
-	res.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(res).Encode(user)
-
-	if err != nil {
-		http.Error(res, "Failed to encode response", http.StatusInternalServerError)
-		return
-	}
+	// Send back the user information
+	c.JSON(http.StatusOK, user)
 }

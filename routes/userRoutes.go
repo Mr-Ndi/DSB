@@ -1,21 +1,18 @@
-// routes/userRoutes.go
 package routes
 
 import (
 	"dsb/controllers"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// UserRoutes registers user-related routes.
-// func UserRoutes(r *mux.Router, userCollection *mongo.Collection) {
-// 	r.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-// 		controllers.CreateUser(w, r, userCollection)
-// 	}).Methods("POST")
-// }
+func UserRoutes(r *gin.Engine) {
+	// Serve Swagger UI (Swagger spec file can be found at /swagger.yaml)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-func UserRoutes(routes *mux.Router) {
-
-	routes.HandleFunc("/user", controllers.CreateUser).Methods("POST")
-	routes.HandleFunc("/login", controllers.HandleLogin).Methods("POST")
+	// Define routes for user creation and login
+	r.POST("/user", controllers.CreateUser)
+	r.POST("/login", controllers.HandleLogin)
 }
