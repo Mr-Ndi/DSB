@@ -154,10 +154,6 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "MongoDB ID",
-                    "type": "string"
-                },
                 "password": {
                     "description": "Password",
                     "type": "string"

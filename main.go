@@ -44,7 +44,7 @@ func main() {
 	r.Use(RequestLogger)
 
 	// Serve Swagger UI (ensure this is only registered once)
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Get port from environment or default to 8080
 	port := os.Getenv("PORT")
