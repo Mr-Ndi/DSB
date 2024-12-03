@@ -1,4 +1,14 @@
 definitions:
+  controllers.AdminRequest:
+    properties:
+      password:
+        type: string
+      roles:
+        description: Array of roles (first is the main role, others are optional)
+        items:
+          type: string
+        type: array
+    type: object
   controllers.Credentials:
     properties:
       password:
@@ -9,18 +19,50 @@ definitions:
   models.User:
     properties:
       password:
-        description: Password
         type: string
       regnumber:
-        description: Registration number
         type: integer
       username:
-        description: Username
         type: string
     type: object
 info:
   contact: {}
 paths:
+  /admin:
+    post:
+      consumes:
+      - application/json
+      description: Create a new admin with a role and password
+      parameters:
+      - description: Admin data
+        in: body
+        name: admin
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.AdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new admin
+      tags:
+      - admins
   /login:
     post:
       consumes:
