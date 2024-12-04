@@ -26,7 +26,10 @@ func RequestLogger(c *gin.Context) {
 
 func main() {
 	// Load configuration from environment variables
-	config.DatabaseConnection() // Ensure this function reads from environment variables
+	err := config.DatabaseConnection() // Ensure this function reads from environment variables
+	if err != nil {
+		log.Fatalf("Error connecting to the database: %v", err) // Log error if connection fails
+	}
 
 	r := gin.Default()
 	routes.UserRoutes(r) // Set up user routes
