@@ -39,6 +39,7 @@ func main() {
 
 	// Register routes
 	routes.UserRoutes(r)
+	routes.SuggestionRoutes(r)
 
 	// Apply request logger middleware
 	r.Use(RequestLogger)
