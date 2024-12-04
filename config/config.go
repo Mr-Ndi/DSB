@@ -3,11 +3,9 @@ package config
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -15,23 +13,18 @@ import (
 var DatabaseClient *mongo.Client
 var JwtKey string
 
-func DatabaseConnection() {
-
-	err := godotenv.Load()
-
-	if err != nil {
-		log.Fatalf("Error loading .env file:%v", err)
-	}
-
+// DatabaseConnection establishes a connection to the MongoDB database and returns an error if it fails.
+func DatabaseConnection() error {
+	// Retrieve JWT key and database URI from environment variables
 	JwtKey = os.Getenv("JWT_KEY")
 	dbURI := os.Getenv("DB_URI")
 
 	if JwtKey == "" {
-		log.Fatalf("Jwt secret key missing")
+		return fmt.Errorf("Jwt secret key missing")
 	}
 
 	if dbURI == "" {
-		log.Fatalf("Connection string is empty")
+		return fmt.Errorf("Connection string is empty")
 	}
 
 	clientOptions := options.Client().ApplyURI(dbURI)
@@ -40,18 +33,16 @@ func DatabaseConnection() {
 	defer cancel()
 
 	client, err := mongo.Connect(timeOut, clientOptions)
-
 	if err != nil {
-		log.Fatalf("Failed to connect database: %v", err)
+		return fmt.Errorf("Failed to connect to database: %v", err)
 	}
 
 	err = client.Ping(timeOut, nil)
-
 	if err != nil {
-		log.Fatalf("Failed to ping connection to db: %v", err)
+		return fmt.Errorf("Failed to ping connection to db: %v", err)
 	}
 
-	fmt.Println("Successfully connected to database !!")
-
+	fmt.Println("Successfully connected to database!")
 	DatabaseClient = client
+	return nil // Return nil if successful
 }

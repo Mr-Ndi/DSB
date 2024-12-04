@@ -25,9 +25,8 @@ func RequestLogger(c *gin.Context) {
 }
 
 func main() {
-	// Load configuration from environment variables
-	err := config.DatabaseConnection() // Ensure this function reads from environment variables
-	if err != nil {
+	// Load configuration from environment variables and handle errors
+	if err := config.DatabaseConnection(); err != nil {
 		log.Fatalf("Error connecting to the database: %v", err) // Log error if connection fails
 	}
 
