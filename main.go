@@ -23,9 +23,7 @@ func RequestLogger(c *gin.Context) {
 	duration := time.Since(start)
 	log.Printf("Response sent: %s %s - %v", c.Request.Method, c.Request.URL.Path, duration)
 }
-
 func loadEnv() {
-	// Load .env file only if not in production
 	if os.Getenv("ENV") != "production" {
 		if err := godotenv.Load(); err != nil {
 			log.Printf("Warning: Error loading .env file: %v", err)
@@ -34,21 +32,20 @@ func loadEnv() {
 }
 
 func main() {
-	loadEnv() // Load environment variables
+	loadEnv()
 
-	config.DatabaseConnection() // Initialize database connection
+	// Load configuration from environment variables
+	config.DatabaseConnection()
 
 	r := gin.Default()
+	routes.UserRoutes(r)
+	r.Use(RequestLogger)
 
-	routes.UserRoutes(r) // Set up routes
-
-	r.Use(RequestLogger) // Use request logger middleware
-
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Swagger documentation route
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // Default port if not set
+		port = "8080"
 	}
 
 	fmt.Printf("Starting server on port %v\n", port)
