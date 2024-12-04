@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"dsb/config"
-	_ "dsb/docs" // Import your docs package for swagger
+	_ "dsb/docs"
 	"dsb/routes"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +16,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// RequestLogger logs incoming requests and their durations
 func RequestLogger(c *gin.Context) {
 	start := time.Now()
 	log.Printf("Incoming request: %s %s", c.Request.Method, c.Request.URL.Path)
@@ -24,38 +25,35 @@ func RequestLogger(c *gin.Context) {
 	log.Printf("Response sent: %s %s - %v", c.Request.Method, c.Request.URL.Path, duration)
 }
 
-func main() {
-	// Load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+// loadEnv loads environment variables from a .env file if not in production
+func loadEnv() {
+	if os.Getenv("ENV") != "production" {
+		if err := godotenv.Load(); err != nil {
+			log.Printf("Warning: Error loading .env file: %v", err)
+		}
 	}
+}
 
-	// Set up database connection
-	config.DatabaseConnection()
+func main() {
+	loadEnv() // Load environment variables
 
-	// Initialize Gin router
+	config.DatabaseConnection() // Initialize database connection
+
 	r := gin.Default()
 
-	// Register routes
-	routes.UserRoutes(r)
+	routes.UserRoutes(r) // Set up routes
 
-	// Apply request logger middleware
-	r.Use(RequestLogger)
+	r.Use(RequestLogger) // Use request logger middleware
 
-	// Serve Swagger UI (ensure this is only registered once)
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Swagger documentation route
 
-	// Get port from environment or default to 8080
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8080" // Default port if not set
 	}
 
-	// Start the server
 	fmt.Printf("Starting server on port %v\n", port)
-	err = r.Run(":" + port)
-	if err != nil {
+	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }
