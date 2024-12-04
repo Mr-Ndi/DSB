@@ -11,45 +11,36 @@ import (
 	"dsb/routes"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// RequestLogger logs incoming requests and their durations
 func RequestLogger(c *gin.Context) {
 	start := time.Now()
 	log.Printf("Incoming request: %s %s", c.Request.Method, c.Request.URL.Path)
-	c.Next()
+	c.Next() // Process the next handler
 	duration := time.Since(start)
 	log.Printf("Response sent: %s %s - %v", c.Request.Method, c.Request.URL.Path, duration)
 }
-func loadEnv() {
-	if os.Getenv("ENV") != "production" {
-		if err := godotenv.Load(); err != nil {
-			log.Printf("Warning: Error loading .env file: %v", err)
-		}
-	}
-}
 
 func main() {
-	loadEnv()
-
 	// Load configuration from environment variables
-	config.DatabaseConnection()
+	config.DatabaseConnection() // Ensure this function reads from environment variables
 
 	r := gin.Default()
-	routes.UserRoutes(r)
-	r.Use(RequestLogger)
+	routes.UserRoutes(r) // Set up user routes
+	r.Use(RequestLogger) // Use the request logger middleware
 
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Swagger documentation route
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("PORT") // Get PORT from environment variables
 	if port == "" {
-		port = "8080"
+		port = "8080" // Default to port 8080 if not set
 	}
 
 	fmt.Printf("\n\n======>   Starting server on port %v\n\n\n", port)
 	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("Error starting server: %v", err)
+		log.Fatalf("Error starting server: %v", err) // Log fatal error if server fails to start
 	}
 }
