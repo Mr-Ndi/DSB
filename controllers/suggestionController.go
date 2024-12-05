@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"dsb/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // PostSuggestion godoc
@@ -31,18 +31,22 @@ func PostSuggestion(c *gin.Context) {
 		Tags       []string `json:"tags"`
 	}
 
-	regnumber, ok := c.Get("regnumber")
-
+	// Get the claims from the context
+	claims, ok := c.Get("claims")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
+		return
 	}
 
-	regnumberFloat, ok := regnumber.(float64)
-
+	// Extract the regnumber from the claims (assumed to be part of the claims)
+	claimsMap := claims.(jwt.MapClaims)
+	regnumberFloat, ok := claimsMap["regnumber"].(float64)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
+		return
 	}
 
+	// Convert regnumber to int
 	regnumberInt := int(regnumberFloat)
 
 	// Bind the incoming JSON request body to the input struct
@@ -72,10 +76,21 @@ func PostSuggestion(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf(createdSuggestion.Suggestion)
-
 	// Return the created suggestion with a 201 status code
 	c.JSON(http.StatusCreated, createdSuggestion)
+}
+
+func GetAllSuggestions(c *gin.Context) {
+	// Call the service to get all suggestions
+	suggestions, err := services.FindAllSuggestions()
+	if err != nil {
+		// Return internal server error if fetching suggestions fails
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of suggestions with a 200 status code
+	c.JSON(http.StatusOK, suggestions)
 }
 
 // PostSuggestionInput is the struct used to document the input for the PostSuggestion endpoint

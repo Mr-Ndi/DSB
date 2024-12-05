@@ -65,3 +65,39 @@ func CreateSuggestion(suggestion *models.Suggestion) (*models.Suggestion, error)
 
 	return suggestion, nil
 }
+
+func FindAllSuggestions() ([]models.Suggestion, error) {
+	// Access the suggestions collection
+	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
+
+	// Context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Query all suggestions
+	cursor, err := suggestionsCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("error fetching suggestions: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Slice to hold all suggestions
+	var suggestions []models.Suggestion
+
+	// Iterate through the cursor and decode each suggestion into the slice
+	for cursor.Next(ctx) {
+		var suggestion models.Suggestion
+		if err := cursor.Decode(&suggestion); err != nil {
+			return nil, fmt.Errorf("error decoding suggestion: %v", err)
+		}
+		suggestions = append(suggestions, suggestion)
+	}
+
+	// Check for cursor iteration error
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating cursor: %v", err)
+	}
+
+	// Return the list of suggestions
+	return suggestions, nil
+}

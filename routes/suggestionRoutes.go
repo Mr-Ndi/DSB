@@ -14,4 +14,5 @@ func SuggestionRoutes(r *gin.Engine) {
 
 	// POST /suggestion route is now protected
 	protected.POST("/suggestion", controllers.PostSuggestion)
+	protected.GET("/suggestion", controllers.GetAllSuggestions)
 }
