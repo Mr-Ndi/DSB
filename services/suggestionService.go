@@ -131,3 +131,34 @@ func FindSuggestionsByUser(username string) ([]models.Suggestion, error) {
 
 	return suggestions, nil
 }
+
+func FindSuggestionsWithTag(tag string) ([]models.Suggestion, error) {
+	// Get the suggestions collection from the database
+	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
+
+	// Define a filter to find suggestions by tag
+	filter := bson.M{"tags": tag}
+
+	// Options to sort by creation time, most recent first
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{Key: "createdAt", Value: -1}})
+
+	// Context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Find all matching suggestions
+	cursor, err := suggestionsCollection.Find(ctx, filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Decode all matching suggestions into a slice
+	var suggestions []models.Suggestion
+	if err := cursor.All(ctx, &suggestions); err != nil {
+		return nil, err
+	}
+
+	return suggestions, nil
+}

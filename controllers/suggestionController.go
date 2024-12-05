@@ -110,6 +110,31 @@ func GetSuggestionsByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, suggestions)
 }
 
+func GetSuggestionWithTag(c *gin.Context) {
+	// Get the tag (role) from path parameters
+	tag := c.Param("role")
+	if tag == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role is required"})
+		return
+	}
+
+	// Call the service to find suggestions with the given tag
+	suggestions, err := services.FindSuggestionsWithTag(tag)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch suggestions"})
+		return
+	}
+
+	// If no suggestions are found, return an appropriate response
+	if len(suggestions) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No suggestions found for the specified role"})
+		return
+	}
+
+	// Return the list of suggestions with a 200 status code
+	c.JSON(http.StatusOK, suggestions)
+}
+
 // PostSuggestionInput is the struct used to document the input for the PostSuggestion endpoint
 type PostSuggestionInput struct {
 	Suggestion string   `json:"suggestion" example:"This is a suggestion"` // Example input
