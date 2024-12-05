@@ -8,7 +8,7 @@ import (
 
 type Suggestion struct {
 	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	By         int                `bson:"by" json:"by"`
+	By         string             `bson:"by" json:"by"`
 	Suggestion string             `bson:"suggestion" json:"suggestion"`
 	Reply      string             `bson:"reply" json:"reply"`
 	Votes      int                `bson:"votes" json:"votes"`

@@ -14,7 +14,6 @@ import (
 
 // CreateSuggestion creates a new suggestion with valid tags only, validated against admin roles
 func CreateSuggestion(suggestion *models.Suggestion) (*models.Suggestion, error) {
-
 	// Access the collections
 	usersCollection := config.DatabaseClient.Database("DSBox").Collection("user")
 	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
@@ -24,15 +23,15 @@ func CreateSuggestion(suggestion *models.Suggestion) (*models.Suggestion, error)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Check if the 'by' field references an existing user
+	// Check if the 'by' field references an existing user by username
 	var userExists struct {
-		Id int `bson:"regnumber"`
+		Username string `bson:"username"`
 	}
 
-	err := usersCollection.FindOne(ctx, bson.M{"regnumber": suggestion.By}).Decode(&userExists)
+	err := usersCollection.FindOne(ctx, bson.M{"username": suggestion.By}).Decode(&userExists)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("user with ID %d does not exist", suggestion.By)
+			return nil, fmt.Errorf("user with username %s does not exist", suggestion.By)
 		}
 		return nil, err
 	}

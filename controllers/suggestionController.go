@@ -38,16 +38,13 @@ func PostSuggestion(c *gin.Context) {
 		return
 	}
 
-	// Extract the regnumber from the claims (assumed to be part of the claims)
+	// Extract the username from the claims
 	claimsMap := claims.(jwt.MapClaims)
-	regnumberFloat, ok := claimsMap["regnumber"].(float64)
+	username, ok := claimsMap["username"].(string)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 		return
 	}
-
-	// Convert regnumber to int
-	regnumberInt := int(regnumberFloat)
 
 	// Bind the incoming JSON request body to the input struct
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -59,7 +56,7 @@ func PostSuggestion(c *gin.Context) {
 	// Initialize the Suggestion model with input fields and default values
 	suggestion := models.Suggestion{
 		Suggestion: input.Suggestion,
-		By:         regnumberInt,
+		By:         username,   // Use username instead of regnumber
 		Tags:       input.Tags, // Optional field, will be empty string if not provided
 		Reply:      "",         // Default
 		Votes:      0,          // Default
