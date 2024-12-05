@@ -11,7 +11,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// postSuggestion handles the request to create a new suggestion
+// PostSuggestion godoc
+// @Summary Create a new suggestion
+// @Description Add a new suggestion to the system with optional tags. Requires authentication.
+// @Tags Suggestions
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param suggestion body PostSuggestionInput true "Suggestion input"
+// @Success 201 {object} models.Suggestion "Created suggestion"
+// @Failure 400 {object} gin.H "Bad request"
+// @Failure 401 {object} gin.H "Unauthorized"
+// @Failure 500 {object} gin.H "Internal server error"
+// @Router /suggestion [post]
 func PostSuggestion(c *gin.Context) {
 	// Struct for capturing input data
 	var input struct {
@@ -51,4 +63,11 @@ func PostSuggestion(c *gin.Context) {
 
 	// Return the created suggestion with a 201 status code
 	c.JSON(http.StatusCreated, createdSuggestion)
+}
+
+// PostSuggestionInput is the struct used to document the input for the PostSuggestion endpoint
+type PostSuggestionInput struct {
+	Suggestion string   `json:"suggestion" example:"This is a suggestion"` // Example input
+	By         int      `json:"by" example:"123"`                          // Example input
+	Tags       []string `json:"tags" example:"[\"tag1\", \"tag2\"]"`       // Example input
 }
