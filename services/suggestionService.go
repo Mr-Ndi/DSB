@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // CreateSuggestion creates a new suggestion with valid tags only, validated against admin roles
@@ -98,5 +99,35 @@ func FindAllSuggestions() ([]models.Suggestion, error) {
 	}
 
 	// Return the list of suggestions
+	return suggestions, nil
+}
+
+func FindSuggestionsByUser(username string) ([]models.Suggestion, error) {
+	// Get the suggestions collection from the database
+	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
+
+	// Define a filter to find suggestions by username
+	filter := bson.D{{Key: "by", Value: username}}
+
+	// Options to sort by creation time, most recent first
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{Key: "createdAt", Value: -1}})
+
+	// Create a context with a timeout to prevent long-running queries
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Find all matching suggestions
+	cursor, err := suggestionsCollection.Find(ctx, filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var suggestions []models.Suggestion
+	if err := cursor.All(ctx, &suggestions); err != nil {
+		return nil, err
+	}
+
 	return suggestions, nil
 }

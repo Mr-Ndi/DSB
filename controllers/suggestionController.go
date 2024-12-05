@@ -90,6 +90,26 @@ func GetAllSuggestions(c *gin.Context) {
 	c.JSON(http.StatusOK, suggestions)
 }
 
+func GetSuggestionsByUser(c *gin.Context) {
+	// Extract the username from the path parameters
+	username := c.Param("username")
+	if username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username is required"})
+		return
+	}
+
+	// Call the service to get suggestions by the username
+	suggestions, err := services.FindSuggestionsByUser(username)
+	if err != nil {
+		// Return internal server error if fetching suggestions fails
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the list of suggestions made by the user
+	c.JSON(http.StatusOK, suggestions)
+}
+
 // PostSuggestionInput is the struct used to document the input for the PostSuggestion endpoint
 type PostSuggestionInput struct {
 	Suggestion string   `json:"suggestion" example:"This is a suggestion"` // Example input
