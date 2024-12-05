@@ -79,3 +79,21 @@ func AddUser(user *models.User) (*models.User, error) {
 
 	return user, nil
 }
+
+// AddAdmin adds a new admin to the database.
+func AddAdmin(admin *models.Admin) (*models.Admin, error) {
+	if config.DatabaseClient == nil {
+		log.Fatal("MongoDB client is nil")
+	}
+
+	collection := config.DatabaseClient.Database("DSBox").Collection("admin")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, admin)
+	if err != nil {
+		return nil, err
+	}
+
+	return admin, nil
+}

@@ -7,56 +7,44 @@ import (
 	"time"
 
 	"dsb/config"
-	_ "dsb/docs" // Import your docs package for swagger
+	_ "dsb/docs"
 	"dsb/routes"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// RequestLogger logs incoming requests and their durations
 func RequestLogger(c *gin.Context) {
 	start := time.Now()
 	log.Printf("Incoming request: %s %s", c.Request.Method, c.Request.URL.Path)
-	c.Next()
+	c.Next() // Process the next handler
 	duration := time.Since(start)
 	log.Printf("Response sent: %s %s - %v", c.Request.Method, c.Request.URL.Path, duration)
 }
 
 func main() {
-	// Load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+	// Load configuration from environment variables and handle errors
+	if err := config.DatabaseConnection(); err != nil {
+		log.Fatalf("Error connecting to the database: %v", err) // Log error if connection fails
 	}
 
-	// Set up database connection
-	config.DatabaseConnection()
-
-	// Initialize Gin router
 	r := gin.Default()
-
-	// Register routes
-	routes.UserRoutes(r)
+	routes.UserRoutes(r) // Set up user routes
 	routes.SuggestionRoutes(r)
 
-	// Apply request logger middleware
-	r.Use(RequestLogger)
+	r.Use(RequestLogger) // Use the request logger middleware
 
-	// Serve Swagger UI (ensure this is only registered once)
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Swagger documentation route
 
-	// Get port from environment or default to 8080
-	port := os.Getenv("PORT")
+	port := os.Getenv("PORT") // Get PORT from environment variables
 	if port == "" {
-		port = "8080"
+		port = "8080" // Default to port 8080 if not set
 	}
 
-	// Start the server
-	fmt.Printf("Starting server on port %v\n", port)
-	err = r.Run(":" + port)
-	if err != nil {
-		log.Fatalf("Error starting server: %v", err)
+	fmt.Printf("\n\n======>   Starting server on port %v\n\n\n", port)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("Error starting server: %v", err) // Log fatal error if server fails to start
 	}
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"dsb/models"
 	"dsb/services"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// Hashing user password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -101,4 +102,77 @@ func HandleLogin(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+// AdminRequest represents the structure for admin registration.
+type AdminRequest struct {
+	Role     string `json:"role"`     // Single role for the admin
+	Password string `json:"password"` // Admin password
+}
+
+// RegisterAdmin handles admin registration.
+// @Summary Register a new admin
+// @Description Create a new admin with a role and password
+// @Tags admins
+// @Accept json
+// @Produce json
+// @Param admin body AdminRequest true "Admin data"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /admin [post]
+// RegisterAdmin handles admin registration.
+func RegisterAdmin(c *gin.Context) {
+	var adminRequest AdminRequest
+
+	// Bind JSON to AdminRequest struct
+	if err := c.ShouldBindJSON(&adminRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		log.Printf("Error binding JSON: %v", err) // Log the error
+		return
+	}
+
+	// Validate role
+	allowedRoles := map[string]bool{
+		"admin":     true,
+		"moderator": true,
+	}
+	if !allowedRoles[adminRequest.Role] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role provided"})
+		return
+	}
+
+	// Validate password
+	if len(adminRequest.Password) < 8 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 8 characters long"})
+		return
+	}
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminRequest.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		log.Printf("Error hashing password: %v", err) // Log the error
+		return
+	}
+
+	// Create admin instance
+	admin := models.Admin{
+		Role:     adminRequest.Role,
+		Password: string(hashedPassword),
+	}
+
+	// Add admin to the database
+	inserted, err := services.AddAdmin(&admin)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create admin"})
+		log.Printf("Error inserting admin into database: %v", err) // Log the error
+		return
+	}
+
+	// Respond with the created admin's role
+	c.JSON(http.StatusCreated, gin.H{
+		"role":    inserted.Role,
+		"message": "Admin created successfully",
+	})
 }
