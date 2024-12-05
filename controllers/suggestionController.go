@@ -28,9 +28,22 @@ func PostSuggestion(c *gin.Context) {
 	// Struct for capturing input data
 	var input struct {
 		Suggestion string   `json:"suggestion" binding:"required"`
-		By         int      `json:"by" binding:"required"`
 		Tags       []string `json:"tags"`
 	}
+
+	regnumber, ok := c.Get("regnumber")
+
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
+	}
+
+	regnumberFloat, ok := regnumber.(float64)
+
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
+	}
+
+	regnumberInt := int(regnumberFloat)
 
 	// Bind the incoming JSON request body to the input struct
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -42,7 +55,7 @@ func PostSuggestion(c *gin.Context) {
 	// Initialize the Suggestion model with input fields and default values
 	suggestion := models.Suggestion{
 		Suggestion: input.Suggestion,
-		By:         input.By,
+		By:         regnumberInt,
 		Tags:       input.Tags, // Optional field, will be empty string if not provided
 		Reply:      "",         // Default
 		Votes:      0,          // Default

@@ -12,11 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// CreateSuggestion creates a new suggestion with valid tags only, validated against admin roles
 func CreateSuggestion(suggestion *models.Suggestion) (*models.Suggestion, error) {
 
 	// Access the collections
 	usersCollection := config.DatabaseClient.Database("DSBox").Collection("user")
 	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
+	adminCollection := config.DatabaseClient.Database("DSBox").Collection("admin") // Assuming this is where admin roles are stored
 
 	// Context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -34,6 +36,23 @@ func CreateSuggestion(suggestion *models.Suggestion) (*models.Suggestion, error)
 		}
 		return nil, err
 	}
+
+	// Filter out invalid tags
+	validTags := []string{}
+	for _, tag := range suggestion.Tags {
+		var adminExists struct {
+			Role string `bson:"role"`
+		}
+
+		// Check if the tag exists as an admin role
+		err := adminCollection.FindOne(ctx, bson.M{"role": tag}).Decode(&adminExists)
+		if err == nil && adminExists.Role != "" {
+			validTags = append(validTags, tag) // Valid tag, add it to the validTags slice
+		}
+	}
+
+	// If there are valid tags, set them; otherwise, set an empty array
+	suggestion.Tags = validTags
 
 	// Insert the suggestion into the database
 	result, err := suggestionsCollection.InsertOne(ctx, suggestion)

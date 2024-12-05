@@ -64,7 +64,14 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 
 		// Optionally pass claims to the next handler
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("user_id", claims["regnumber"]) // Change "regnumber" to match your token claim key
+			regnumber, exists := claims["regnumber"]
+			if !exists || regnumber == nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "regnumber claim missing"})
+				c.Abort()
+				return
+			}
+			// Pass the regnumber to the next handler
+			c.Set("regnumber", regnumber)
 		} else {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 			c.Abort()
