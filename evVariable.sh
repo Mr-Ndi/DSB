@@ -3,6 +3,7 @@
 # Assign values to environment variables
 export DB_URI="mongodb+srv://coffee:JnZl556iMCJEtyAM@digitalsuggestionboxpro.seedu.mongodb.net/?retryWrites=true&w=majority&appName=DigitalSuggestionBoxProject"
 export PORT=8080
+
 export JWT_KEY="-----BEGIN PRIVATE KEY-----
 MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDAatUO7IJyurRz
 vEODom2ry3jxjXyGNNJnMPOewcCo0/ntvztpzkrf+W4iN8y4iZbBUIQU3m4RXU5y
@@ -30,6 +31,7 @@ CLGyzpmS2yzV8GWRhngw6d23YVZZovpuqOaQhDajjyp0z7foZnp4N56ZsDTurNl9
 lQooOznM6TqfoolfUL+0ubRY4xk9dc4RS9VUuVAsG+Z52Yt1jhG8UTPY3NbCSQBc
 ixNWLLsZeBNkJAmczKvX6kIWT+N1+19OuS0EOtYLg0AVMz53RQYPo3Hv+LOSKOC9
 A/qYpUWF4vYUc4eRD93V5Q=="
+
 export JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwGrVDuyCcrq0c7xDg6Jt
 q8t48Y18hjTSZzDznsHAqNP57b87ac5K3/luIjfMuImWwVCEFN5uEV1OcgNJ2AIt
@@ -39,11 +41,3 @@ OZXibzCRtfJndRTsEVFJSOIDyrJFmhm5WfIddRPF0WJ0j7TxXE1jaAxRSSDEALFY
 d5MbTT8/AE7i89khVwCc3jz8FdkikHZlduHIbscDUoeSLbvedSmClRoGE4Er3Y6i
 QwIDAQAB
 -----END PUBLIC KEY-----"
-
-# Print confirmation of set variables (optional)
-echo "Environment variables set:"
-echo "DB_URI: $DB_URI"
-echo "PORT: $PORT"
-echo "JWT_KEY: $JWT_KEY"
-echo "JWT_PUBLIC_KEY: $JWT_PUBLIC_KEY"
-
