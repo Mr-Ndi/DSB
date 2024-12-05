@@ -80,6 +80,56 @@ func AddUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
+// FindUserByUsername checks if a user exists by username.
+func FindUserByUsername(username string) (*models.User, error) {
+	if config.DatabaseClient == nil {
+		log.Fatal("MongoDB client is nil")
+	}
+
+	collection := config.DatabaseClient.Database("DSBox").Collection("user")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var user models.User
+	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // User not found
+		}
+		log.Printf("Error querying database: %v", err)
+		return nil, err // Other errors
+	}
+
+	return &user, nil // User found
+}
+
+// FindUserByRegnumber checks if a user exists by registration number.
+func FindUserByRegnumber(regnumber int) (*models.User, error) {
+	if config.DatabaseClient == nil {
+		log.Fatal("MongoDB client is nil")
+	}
+
+	collection := config.DatabaseClient.Database("DSBox").Collection("user")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var user models.User
+	err := collection.FindOne(ctx, bson.M{"regnumber": regnumber}).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // User not found
+		}
+		log.Printf("Error querying database: %v", err)
+		return nil, err // Other errors
+	}
+
+	return &user, nil // User found
+}
+
 // AddAdmin adds a new admin to the database.
 func AddAdmin(admin *models.Admin) (*models.Admin, error) {
 	if config.DatabaseClient == nil {

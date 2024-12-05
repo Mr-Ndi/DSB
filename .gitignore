@@ -27,3 +27,5 @@ tmp
 
 # env file
 .env
+# for evironment variable
+.evVariable.sh

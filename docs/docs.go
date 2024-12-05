@@ -197,14 +197,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "password": {
+                    "description": "Admin password",
                     "type": "string"
                 },
-                "roles": {
-                    "description": "Array of roles (first is the main role, others are optional)",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "role": {
+                    "description": "Single role for the admin",
+                    "type": "string"
                 }
             }
         },

@@ -18,13 +18,14 @@ type Credentials struct {
 
 // CreateUser handles user registration.
 // @Summary Create a new user
-// @Description Create a new user with username, registration number and password
+// @Description Create a new user with username, registration number, and password
 // @Tags users
 // @Accept json
 // @Produce json
 // @Param user body models.User true "User data"
 // @Success 201 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string "Conflict: User already exists"
 // @Failure 500 {object} map[string]string
 // @Router /user [post]
 func CreateUser(c *gin.Context) {
@@ -32,6 +33,27 @@ func CreateUser(c *gin.Context) {
 	// Bind incoming JSON to the user model
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if the user already exists by username or registration number
+	existingUserByUsername, err := services.FindUserByUsername(user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if existingUserByUsername != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+		return
+	}
+
+	existingUserByRegnumber, err := services.FindUserByRegnumber(user.Regnumber)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if existingUserByRegnumber != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Registration number already exists"})
 		return
 	}
 
