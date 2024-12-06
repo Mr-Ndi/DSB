@@ -163,6 +163,20 @@ func GetSuggestionWithTag(c *gin.Context) {
 	c.JSON(http.StatusOK, suggestions)
 }
 
+// HandleVote godoc
+// @Summary Add or update a vote on a suggestion
+// @Description Allows a user to upvote or downvote a suggestion. If the user has already voted, it will update the vote type.
+// @Tags votes
+// @Accept json
+// @Produce json
+// @Param type path string true "Vote type (upvote or downvote)"
+// @Param vote body models.Vote true "Vote data including suggestion ID and content"
+// @Success 200 {object} models.Vote "Successfully added or updated vote"
+// @Failure 400 {object} map[string]string "Invalid request body or vote type"
+// @Failure 404 {object} map[string]string "Username missing in claims, or suggestion not found"
+// @Failure 409 {object} map[string]string "You have already voted with the same type"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /votes/{type} [post]
 func HandleVote(c *gin.Context) {
 	// Retrieve the claims (which contain the username) from the context
 	claims, exists := c.Get("claims")
@@ -212,23 +226,23 @@ func HandleVote(c *gin.Context) {
 	}
 
 	// Call the AddVote function to process the vote
-	updatedVote, err := services.AddVote(vote)
+	createdVote, err := services.AddVote(vote)
 	if err != nil {
-		// Check if the error is for the "Already voted with the same type"
-		if err.Error() == "already voted with the same type" {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-			return
+		// Handle specific errors based on the returned error message
+		if err.Error() == "invalid username" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Username not found"})
+		} else if err.Error() == "invalid suggestion ID format" || err.Error() == "suggestion not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Suggestion not found"})
+		} else if err.Error() == "already voted with the same type" {
+			c.JSON(http.StatusConflict, gin.H{"error": "You have already voted with the same type"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "An error occurred while processing your vote"})
 		}
-		// Otherwise, return internal server error
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// If we reach here, the vote was successfully added or updated
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Vote processed successfully",
-		"vote":    updatedVote,
-	})
+	// Respond with a success message
+	c.JSON(http.StatusOK, createdVote)
 }
 
 // PostSuggestionInput is the struct used to document the input for the PostSuggestion endpoint

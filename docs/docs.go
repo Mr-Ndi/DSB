@@ -468,6 +468,83 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/votes/{type}": {
+            "post": {
+                "description": "Allows a user to upvote or downvote a suggestion. If the user has already voted, it will update the vote type.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "votes"
+                ],
+                "summary": "Add or update a vote on a suggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vote type (upvote or downvote)",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vote data including suggestion ID and content",
+                        "name": "vote",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Vote"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully added or updated vote",
+                        "schema": {
+                            "$ref": "#/definitions/models.Vote"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or vote type",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Username missing in claims, or suggestion not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "You have already voted with the same type",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -566,9 +643,6 @@ const docTemplate = `{
                 },
                 "views": {
                     "type": "integer"
-                },
-                "votes": {
-                    "type": "integer"
                 }
             }
         },
@@ -582,6 +656,26 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Vote": {
+            "type": "object",
+            "properties": {
+                "by": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "suggestionId": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

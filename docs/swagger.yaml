@@ -65,8 +65,6 @@ definitions:
         type: array
       views:
         type: integer
-      votes:
-        type: integer
     type: object
   models.User:
     properties:
@@ -75,6 +73,19 @@ definitions:
       regnumber:
         type: integer
       username:
+        type: string
+    type: object
+  models.Vote:
+    properties:
+      by:
+        type: string
+      content:
+        type: string
+      id:
+        type: string
+      suggestionId:
+        type: string
+      type:
         type: string
     type: object
 info:
@@ -380,4 +391,56 @@ paths:
       summary: Create a new user
       tags:
       - users
+  /votes/{type}:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to upvote or downvote a suggestion. If the user has
+        already voted, it will update the vote type.
+      parameters:
+      - description: Vote type (upvote or downvote)
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: Vote data including suggestion ID and content
+        in: body
+        name: vote
+        required: true
+        schema:
+          $ref: '#/definitions/models.Vote'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully added or updated vote
+          schema:
+            $ref: '#/definitions/models.Vote'
+        "400":
+          description: Invalid request body or vote type
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Username missing in claims, or suggestion not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: You have already voted with the same type
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add or update a vote on a suggestion
+      tags:
+      - votes
 swagger: "2.0"

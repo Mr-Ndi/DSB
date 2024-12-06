@@ -180,7 +180,7 @@ func AddVote(vote *models.Vote) (*models.Vote, error) {
 		if err == mongo.ErrNoDocuments {
 			return nil, errors.New("invalid username")
 		}
-		return nil, err
+		return nil, fmt.Errorf("error while validating username: %v", err)
 	}
 
 	// Validate suggestion (ensure 'SuggestionId' is a valid suggestion ID)
@@ -194,23 +194,23 @@ func AddVote(vote *models.Vote) (*models.Vote, error) {
 		if err == mongo.ErrNoDocuments {
 			return nil, errors.New("suggestion not found")
 		}
-		return nil, err
+		return nil, fmt.Errorf("error while validating suggestion: %v", err)
 	}
 
 	// Check if the user has already voted on this suggestion
 	var existingVote models.Vote
 	err = votesCollection.FindOne(ctx, bson.M{"by": vote.By, "suggestionId": vote.SuggestionId}).Decode(&existingVote)
 	if err != nil && err != mongo.ErrNoDocuments {
-		return nil, err
+		return nil, fmt.Errorf("error while checking existing vote: %v", err)
 	}
 
-	// If the user has voted and the type is different, update the existing vote
+	// If the user has voted, check if the vote type is different
 	if err == nil && existingVote.Type != vote.Type {
 		// Update the existing vote with the new type
 		update := bson.M{"$set": bson.M{"type": vote.Type}}
 		_, err = votesCollection.UpdateOne(ctx, bson.M{"_id": existingVote.Id}, update)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error while updating vote: %v", err)
 		}
 		// Return the updated vote
 		existingVote.Type = vote.Type
@@ -222,11 +222,11 @@ func AddVote(vote *models.Vote) (*models.Vote, error) {
 		return nil, errors.New("already voted with the same type")
 	}
 
-	// If no existing vote, insert the new vote
+	// If no existing vote or same vote type, insert the new vote
 	vote.Id = primitive.NewObjectID() // Assign a new ID to the vote
 	_, err = votesCollection.InsertOne(ctx, vote)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error while inserting vote: %v", err)
 	}
 
 	return vote, nil
