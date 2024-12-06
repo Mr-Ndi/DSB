@@ -7,8 +7,8 @@ import (
 )
 
 func UserRoutes(r *gin.Engine) {
-	// Define routes for user creation and login
-	r.POST("/user", controllers.CreateUser)
-	r.POST("/login", controllers.HandleLogin)
-	r.POST("/admin", controllers.RegisterAdmin)
+	r.POST("/user", controllers.CreateUser)        // Define routes for user creation and login
+	r.POST("/login", controllers.HandleLogin)      // Route for user login
+	r.POST("/admin", controllers.RegisterAdmin)    // Route for admin registration
+	r.POST("/admin/login", controllers.AdminLogin) // Route for admin login
 }

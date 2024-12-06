@@ -15,8 +15,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Login authenticates a user and generates a JWT token.
 func Login(username, password string) (*models.LoginResponse, error) {
-
 	collection := config.DatabaseClient.Database("DSBox").Collection("user")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
@@ -27,7 +27,7 @@ func Login(username, password string) (*models.LoginResponse, error) {
 	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
 
 	if err != nil {
-		if err == mongo.ErrNoDocuments { // Corrected condition
+		if err == mongo.ErrNoDocuments {
 			fmt.Println("No match")
 			return nil, fmt.Errorf("user not found")
 		}
@@ -45,9 +45,9 @@ func Login(username, password string) (*models.LoginResponse, error) {
 
 	token, err := utils.GenerateJwtToken(username, user.Regnumber)
 
-	fmt.Println("TOKEN:: %v", token)
+	fmt.Printf("TOKEN:: %v\n", token) // Corrected print statement
 	if err != nil {
-		fmt.Println("error while generating token: %v", err)
+		fmt.Printf("error while generating token: %v\n", err)
 		return nil, err
 	}
 
@@ -60,8 +60,8 @@ func Login(username, password string) (*models.LoginResponse, error) {
 	return res, nil
 }
 
+// AddUser adds a new user to the database.
 func AddUser(user *models.User) (*models.User, error) {
-
 	if config.DatabaseClient == nil {
 		log.Fatal("MongoDB client is nil")
 	}
@@ -146,4 +146,35 @@ func AddAdmin(admin *models.Admin) (*models.Admin, error) {
 	}
 
 	return admin, nil
+}
+
+// AdminLogin validates admin credentials and returns the admin if successful.
+func AdminLogin(role, password string) (*models.Admin, error) {
+	if config.DatabaseClient == nil {
+		log.Fatal("MongoDB client is nil")
+	}
+
+	collection := config.DatabaseClient.Database("DSBox").Collection("admin")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var admin models.Admin
+	// Find the admin by role (you may want to adjust this based on your schema)
+	err := collection.FindOne(ctx, bson.M{"role": role}).Decode(&admin)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("admin not found")
+		}
+		log.Printf("Error querying database: %v", err)
+		return nil, err // Other errors
+	}
+
+	// Compare hashed password with provided password
+	if err = bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password)); err != nil {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	return &admin, nil // Admin authenticated successfully
 }
