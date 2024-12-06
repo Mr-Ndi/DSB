@@ -16,4 +16,5 @@ func SuggestionRoutes(r *gin.Engine) {
 	protected.GET("/suggestion/tag/:role", controllers.GetSuggestionWithTag)
 	protected.POST("/suggestion/vote/:type", controllers.HandleVote)
 	protected.GET("/admin/suggestions/:adminID", controllers.GetAdminSuggestions)
+	protected.POST("/admin/suggestions/:suggestionId/respond", controllers.RespondToSuggestion)
 }

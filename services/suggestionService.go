@@ -282,3 +282,20 @@ func FindSuggestionsByTag(tag string, status string) ([]models.Suggestion, error
 
 	return suggestions, nil
 }
+
+// AddResponse saves a new response to the database.
+func AddResponse(response *models.Response) (*models.Response, error) {
+	ctx := context.TODO()
+
+	// Assign a new ID to the response
+	response.ID = primitive.NewObjectID().Hex() // Correctly call Hex() on the ObjectID
+	response.CreatedAt = time.Now()             // Set created time
+
+	// Insert the response into the database
+	_, err := config.DatabaseClient.Database("DSBox").Collection("responses").InsertOne(ctx, response)
+	if err != nil {
+		return nil, fmt.Errorf("error while inserting response: %v", err)
+	}
+
+	return response, nil // Return created response or handle as needed.
+}

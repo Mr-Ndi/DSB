@@ -130,9 +130,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/suggestions/{adminID}": {
+        "/admin/suggestions": {
             "get": {
-                "description": "Fetch all suggestions tagged for the specified admin with status \"submitted\".",
+                "description": "Fetch all suggestions with status \"submitted\" that are tagged for the logged-in admin.",
                 "consumes": [
                     "application/json"
                 ],
@@ -143,15 +143,6 @@ const docTemplate = `{
                     "Admin Suggestions"
                 ],
                 "summary": "Retrieve suggestions for admin",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Admin ID",
-                        "name": "adminID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "List of suggestions tagged for the admin",
@@ -159,6 +150,83 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/models.Suggestion"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/suggestions/{suggestionId}/respond": {
+            "post": {
+                "description": "Allows an admin to submit a response to a specific suggestion.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Responses"
+                ],
+                "summary": "Respond to a suggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Suggestion ID",
+                        "name": "suggestionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Response content",
+                        "name": "requestBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created response",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - User is not an admin",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     },
@@ -535,12 +603,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Vote data including suggestion ID and content",
+                        "description": "Vote data with suggestion ID",
                         "name": "vote",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Vote"
+                            "type": "object"
                         }
                     }
                 ],
@@ -548,7 +616,10 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully added or updated vote",
                         "schema": {
-                            "$ref": "#/definitions/models.Vote"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
@@ -657,6 +728,30 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Response": {
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "description": "Admin responding",
+                    "type": "string"
+                },
+                "content": {
+                    "description": "Response content",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "Timestamp of the response",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "suggestionId": {
+                    "description": "Reference to the suggestion",
+                    "type": "string"
+                }
+            }
+        },
         "models.Suggestion": {
             "type": "object",
             "properties": {
@@ -700,26 +795,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Vote": {
-            "type": "object",
-            "properties": {
-                "by": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "suggestionId": {
-                    "type": "string"
-                },
-                "type": {
                     "type": "string"
                 }
             }

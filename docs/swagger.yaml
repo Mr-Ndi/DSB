@@ -44,6 +44,23 @@ definitions:
           type: string
         type: array
     type: object
+  models.Response:
+    properties:
+      admin:
+        description: Admin responding
+        type: string
+      content:
+        description: Response content
+        type: string
+      created_at:
+        description: Timestamp of the response
+        type: string
+      id:
+        type: string
+      suggestionId:
+        description: Reference to the suggestion
+        type: string
+    type: object
   models.Suggestion:
     properties:
       by:
@@ -73,19 +90,6 @@ definitions:
       regnumber:
         type: integer
       username:
-        type: string
-    type: object
-  models.Vote:
-    properties:
-      by:
-        type: string
-      content:
-        type: string
-      id:
-        type: string
-      suggestionId:
-        type: string
-      type:
         type: string
     type: object
 info:
@@ -167,18 +171,12 @@ paths:
       summary: Admin login
       tags:
       - admins
-  /admin/suggestions/{adminID}:
+  /admin/suggestions:
     get:
       consumes:
       - application/json
-      description: Fetch all suggestions tagged for the specified admin with status
-        "submitted".
-      parameters:
-      - description: Admin ID
-        in: path
-        name: adminID
-        required: true
-        type: string
+      description: Fetch all suggestions with status "submitted" that are tagged for
+        the logged-in admin.
       produces:
       - application/json
       responses:
@@ -188,6 +186,12 @@ paths:
             items:
               $ref: '#/definitions/models.Suggestion'
             type: array
+        "403":
+          description: Forbidden - User is not an admin
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
@@ -197,6 +201,51 @@ paths:
       summary: Retrieve suggestions for admin
       tags:
       - Admin Suggestions
+  /admin/suggestions/{suggestionId}/respond:
+    post:
+      consumes:
+      - application/json
+      description: Allows an admin to submit a response to a specific suggestion.
+      parameters:
+      - description: Suggestion ID
+        in: path
+        name: suggestionId
+        required: true
+        type: string
+      - description: Response content
+        in: body
+        name: requestBody
+        required: true
+        schema:
+          $ref: '#/definitions/models.Response'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created response
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - User is not an admin
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Respond to a suggestion
+      tags:
+      - Admin Responses
   /login:
     post:
       consumes:
@@ -433,19 +482,21 @@ paths:
         name: type
         required: true
         type: string
-      - description: Vote data including suggestion ID and content
+      - description: Vote data with suggestion ID
         in: body
         name: vote
         required: true
         schema:
-          $ref: '#/definitions/models.Vote'
+          type: object
       produces:
       - application/json
       responses:
         "200":
           description: Successfully added or updated vote
           schema:
-            $ref: '#/definitions/models.Vote'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Invalid request body or vote type
           schema:

@@ -23,3 +23,12 @@ type Vote struct {
 	Type         string             `bson:"type" json:"type"`
 	SuggestionId string             `bson:"suggestionId" json:"suggestionId"`
 }
+
+// Response represents a response to a suggestion.
+type Response struct {
+	ID           string    `bson:"id" json:"id"`
+	SuggestionId string    `bson:"suggestionId" json:"suggestionId"` // Reference to the suggestion
+	Admin        string    `bson:"admin" json:"admin"`               // Admin responding
+	Content      string    `bson:"content" json:"content"`           // Response content
+	CreatedAt    time.Time `bson:"created_at" json:"created_at"`     // Timestamp of the response
+}
