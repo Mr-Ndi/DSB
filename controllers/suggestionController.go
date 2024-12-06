@@ -170,13 +170,15 @@ func GetSuggestionWithTag(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param type path string true "Vote type (upvote or downvote)"
-// @Param vote body models.Vote true "Vote data including suggestion ID and content"
-// @Success 200 {object} models.Vote "Successfully added or updated vote"
+// @Param vote body object true "Vote data with suggestion ID" example({"suggestionId": "12345"})
+// @Success 200 {object} map[string]string "Successfully added or updated vote"
 // @Failure 400 {object} map[string]string "Invalid request body or vote type"
 // @Failure 404 {object} map[string]string "Username missing in claims, or suggestion not found"
 // @Failure 409 {object} map[string]string "You have already voted with the same type"
 // @Failure 500 {object} map[string]string "Internal Server Error"
 // @Router /votes/{type} [post]
+//
+// @BodyExample json { "suggestionId": "12345" }
 func HandleVote(c *gin.Context) {
 	// Retrieve the claims (which contain the username) from the context
 	claims, exists := c.Get("claims")
@@ -206,10 +208,9 @@ func HandleVote(c *gin.Context) {
 		return
 	}
 
-	// Parse the request body to get the suggestion ID and content
+	// Parse the request body to get the suggestion ID
 	var requestBody struct {
 		SuggestionId string `json:"suggestionId" binding:"required"`
-		Content      string `json:"content" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
@@ -222,7 +223,6 @@ func HandleVote(c *gin.Context) {
 		By:           username,
 		Type:         voteType,
 		SuggestionId: requestBody.SuggestionId,
-		Content:      requestBody.Content,
 	}
 
 	// Call the AddVote function to process the vote

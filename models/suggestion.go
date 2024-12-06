@@ -19,7 +19,6 @@ type Suggestion struct {
 
 type Vote struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Content      string             `bson:"content" json:"content"`
 	By           string             `bson:"by" json:"by"`
 	Type         string             `bson:"type" json:"type"`
 	SuggestionId string             `bson:"suggestionId" json:"suggestionId"`
