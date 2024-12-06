@@ -59,7 +59,6 @@ func PostSuggestion(c *gin.Context) {
 		By:         username,   // Use username instead of regnumber
 		Tags:       input.Tags, // Optional field, will be empty string if not provided
 		Reply:      "",         // Default
-		Votes:      0,          // Default
 		Views:      0,          // Default
 		Status:     "pending",  // Default
 		CreatedAt:  time.Now(),
@@ -133,6 +132,74 @@ func GetSuggestionWithTag(c *gin.Context) {
 
 	// Return the list of suggestions with a 200 status code
 	c.JSON(http.StatusOK, suggestions)
+}
+
+func HandleVote(c *gin.Context) {
+	// Retrieve the claims (which contain the username) from the context
+	claims, exists := c.Get("claims")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Type assert the claims to the custom struct that contains the username
+	userClaims, ok := claims.(jwt.MapClaims)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid claims"})
+		return
+	}
+
+	// Extract the username from the claims
+	username, exists := userClaims["username"].(string)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Username missing in claims"})
+		return
+	}
+
+	// Get the vote type from the URL parameters
+	voteType := c.Param("type")
+	if voteType != "upvote" && voteType != "downvote" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid vote type"})
+		return
+	}
+
+	// Parse the request body to get the suggestion ID and content
+	var requestBody struct {
+		SuggestionId string `json:"suggestionId" binding:"required"`
+		Content      string `json:"content" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Create the vote object
+	vote := &models.Vote{
+		By:           username,
+		Type:         voteType,
+		SuggestionId: requestBody.SuggestionId,
+		Content:      requestBody.Content,
+	}
+
+	// Call the AddVote function to process the vote
+	updatedVote, err := services.AddVote(vote)
+	if err != nil {
+		// Check if the error is for the "Already voted with the same type"
+		if err.Error() == "already voted with the same type" {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		// Otherwise, return internal server error
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// If we reach here, the vote was successfully added or updated
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Vote processed successfully",
+		"vote":    updatedVote,
+	})
 }
 
 // PostSuggestionInput is the struct used to document the input for the PostSuggestion endpoint

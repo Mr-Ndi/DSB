@@ -4,6 +4,7 @@ import (
 	"context"
 	"dsb/config"
 	"dsb/models"
+	"errors"
 	"fmt"
 	"time"
 
@@ -161,4 +162,72 @@ func FindSuggestionsWithTag(tag string) ([]models.Suggestion, error) {
 	}
 
 	return suggestions, nil
+}
+
+func AddVote(vote *models.Vote) (*models.Vote, error) {
+	// Context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Get the necessary collections
+	usersCollection := config.DatabaseClient.Database("DSBox").Collection("user")
+	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
+	votesCollection := config.DatabaseClient.Database("DSBox").Collection("vote")
+
+	// Validate user (ensure 'By' is a valid username)
+	var user bson.M
+	if err := usersCollection.FindOne(ctx, bson.M{"username": vote.By}).Decode(&user); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("invalid username")
+		}
+		return nil, err
+	}
+
+	// Validate suggestion (ensure 'SuggestionId' is a valid suggestion ID)
+	suggestionID, err := primitive.ObjectIDFromHex(vote.SuggestionId)
+	if err != nil {
+		return nil, errors.New("invalid suggestion ID format")
+	}
+
+	var suggestion bson.M
+	if err := suggestionsCollection.FindOne(ctx, bson.M{"_id": suggestionID}).Decode(&suggestion); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("suggestion not found")
+		}
+		return nil, err
+	}
+
+	// Check if the user has already voted on this suggestion
+	var existingVote models.Vote
+	err = votesCollection.FindOne(ctx, bson.M{"by": vote.By, "suggestionId": vote.SuggestionId}).Decode(&existingVote)
+	if err != nil && err != mongo.ErrNoDocuments {
+		return nil, err
+	}
+
+	// If the user has voted and the type is different, update the existing vote
+	if err == nil && existingVote.Type != vote.Type {
+		// Update the existing vote with the new type
+		update := bson.M{"$set": bson.M{"type": vote.Type}}
+		_, err = votesCollection.UpdateOne(ctx, bson.M{"_id": existingVote.Id}, update)
+		if err != nil {
+			return nil, err
+		}
+		// Return the updated vote
+		existingVote.Type = vote.Type
+		return &existingVote, nil
+	}
+
+	// If the user has already voted with the same type, return an error
+	if err == nil && existingVote.Type == vote.Type {
+		return nil, errors.New("already voted with the same type")
+	}
+
+	// If no existing vote, insert the new vote
+	vote.Id = primitive.NewObjectID() // Assign a new ID to the vote
+	_, err = votesCollection.InsertOne(ctx, vote)
+	if err != nil {
+		return nil, err
+	}
+
+	return vote, nil
 }
