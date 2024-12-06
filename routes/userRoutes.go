@@ -10,5 +10,5 @@ func UserRoutes(r *gin.Engine) {
 	// Define routes for user creation and login
 	r.POST("/user", controllers.CreateUser)
 	r.POST("/login", controllers.HandleLogin)
-	r.POST("/admin")
+	r.POST("/admin", controllers.RegisterAdmin)
 }
