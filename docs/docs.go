@@ -140,7 +140,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "Create a new user with username, registration number and password",
+                "description": "Create a new user with username, registration number, and password",
                 "consumes": [
                     "application/json"
                 ],
@@ -172,6 +172,15 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict: User already exists",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

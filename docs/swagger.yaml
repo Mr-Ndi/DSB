@@ -112,7 +112,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new user with username, registration number and password
+      description: Create a new user with username, registration number, and password
       parameters:
       - description: User data
         in: body
@@ -130,6 +130,12 @@ paths:
             type: object
         "400":
           description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: 'Conflict: User already exists'
           schema:
             additionalProperties:
               type: string

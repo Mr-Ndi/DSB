@@ -11,7 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// PostSuggestion godoc
+// PostSuggestion handles adding a new suggestion.
 // @Summary Create a new suggestion
 // @Description Add a new suggestion to the system with optional tags. Requires authentication.
 // @Tags Suggestions
@@ -20,10 +20,11 @@ import (
 // @Param Authorization header string true "Bearer token"
 // @Param suggestion body PostSuggestionInput true "Suggestion input"
 // @Success 201 {object} models.Suggestion "Created suggestion"
-// @Failure 400 {object} gin.H "Bad request"
-// @Failure 401 {object} gin.H "Unauthorized"
-// @Failure 500 {object} gin.H "Internal server error"
+// @Failure 400 {object} ErrorResponse "Bad request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 500 {object} ErrorResponse "Internal server error"
 // @Router /suggestion [post]
+
 func PostSuggestion(c *gin.Context) {
 	// Struct for capturing input data
 	var input struct {
