@@ -167,6 +167,36 @@ paths:
       summary: Admin login
       tags:
       - admins
+  /admin/suggestions/{adminID}:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all suggestions tagged for the specified admin with status
+        "submitted".
+      parameters:
+      - description: Admin ID
+        in: path
+        name: adminID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of suggestions tagged for the admin
+          schema:
+            items:
+              $ref: '#/definitions/models.Suggestion'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Retrieve suggestions for admin
+      tags:
+      - Admin Suggestions
   /login:
     post:
       consumes:

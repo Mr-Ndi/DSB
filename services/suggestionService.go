@@ -253,3 +253,32 @@ func AddVote(vote *models.Vote) (*models.Vote, error) {
 
 	return vote, nil
 }
+
+// FindSuggestionsByTag retrieves suggestions tagged for a specific user and with a specific status.
+func FindSuggestionsByTag(tag string, status string) ([]models.Suggestion, error) {
+	var suggestions []models.Suggestion
+
+	// Create a filter to find suggestions by tag and status
+	filter := bson.M{
+		"tags":   tag,
+		"status": status,
+	}
+
+	// Query the database (assuming you have a MongoDB collection named "suggestions")
+	cursor, err := config.DatabaseClient.Database("DSBox").Collection("suggestions").Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	// Decode the results into the suggestions slice
+	for cursor.Next(context.TODO()) {
+		var suggestion models.Suggestion
+		if err := cursor.Decode(&suggestion); err != nil {
+			return nil, err
+		}
+		suggestions = append(suggestions, suggestion)
+	}
+
+	return suggestions, nil
+}

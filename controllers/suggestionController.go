@@ -251,3 +251,30 @@ type PostSuggestionInput struct {
 	By         int      `json:"by" example:"123"`                          // Example input
 	Tags       []string `json:"tags" example:"[\"tag1\", \"tag2\"]"`       // Example input
 }
+
+// GetAdminSuggestions retrieves suggestions tagged for the logged-in admin.
+// @Summary Retrieve suggestions for admin
+// @Description Fetch all suggestions tagged for the specified admin with status "submitted".
+// @Tags Admin Suggestions
+// @Accept json
+// @Produce json
+// @Param adminID path string true "Admin ID" // The ID of the admin requesting the suggestions
+// @Success 200 {array} models.Suggestion "List of suggestions tagged for the admin"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /admin/suggestions/{adminID} [get]
+func GetAdminSuggestions(c *gin.Context) {
+	// Assuming you have a way to get the logged-in admin's ID
+	adminID := c.Param("adminID") // Or however you identify the logged-in admin
+
+	// Define the status you want to filter by (e.g., "submitted")
+	status := "submitted"
+
+	// Fetch suggestions tagged for this admin with the specified status
+	suggestions, err := services.FindSuggestionsByTag(adminID, status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, suggestions)
+}

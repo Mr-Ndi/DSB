@@ -119,6 +119,50 @@
                 }
             }
         },
+        "/admin/suggestions/{adminID}": {
+            "get": {
+                "description": "Fetch all suggestions tagged for the specified admin with status \"submitted\".",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Suggestions"
+                ],
+                "summary": "Retrieve suggestions for admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Admin ID",
+                        "name": "adminID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of suggestions tagged for the admin",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Suggestion"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Login using username and password",
