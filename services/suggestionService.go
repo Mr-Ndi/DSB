@@ -25,40 +25,37 @@ func CreateSuggestion(suggestion *models.Suggestion) (*models.Suggestion, error)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Check if the 'by' field references an existing user by username
+	// Validate if the 'By' field references an existing user by username
 	var userExists struct {
 		Username string `bson:"username"`
 	}
-
-	err := usersCollection.FindOne(ctx, bson.M{"username": suggestion.By}).Decode(&userExists)
-	if err != nil {
+	if err := usersCollection.FindOne(ctx, bson.M{"username": suggestion.By}).Decode(&userExists); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("user with username %s does not exist", suggestion.By)
 		}
-		return nil, err
+		return nil, fmt.Errorf("error validating user: %v", err)
 	}
 
-	// Filter out invalid tags
-	validTags := []string{}
+	// Filter valid tags from the admin roles
+	var validTags []string
 	for _, tag := range suggestion.Tags {
 		var adminExists struct {
 			Role string `bson:"role"`
 		}
-
 		// Check if the tag exists as an admin role
 		err := adminCollection.FindOne(ctx, bson.M{"role": tag}).Decode(&adminExists)
 		if err == nil && adminExists.Role != "" {
-			validTags = append(validTags, tag) // Valid tag, add it to the validTags slice
+			validTags = append(validTags, tag) // Add valid tag to the slice
 		}
 	}
 
-	// If there are valid tags, set them; otherwise, set an empty array
+	// Assign valid tags to the suggestion
 	suggestion.Tags = validTags
 
 	// Insert the suggestion into the database
 	result, err := suggestionsCollection.InsertOne(ctx, suggestion)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error inserting suggestion: %v", err)
 	}
 
 	// Assign the generated ID to the suggestion

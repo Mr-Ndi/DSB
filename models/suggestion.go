@@ -7,14 +7,15 @@ import (
 )
 
 type Suggestion struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	By         string             `bson:"by" json:"by"`
-	Suggestion string             `bson:"suggestion" json:"suggestion"`
-	Reply      string             `bson:"reply" json:"reply"`
-	Tags       []string           `bson:"tags,omitempty" json:"tags,omitempty"` // Omit if nil
-	Views      int                `bson:"views" json:"views"`
-	Status     string             `bson:"status" json:"status"`
-	CreatedAt  time.Time          `bson:"createdAt" json:"createdAt"`
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	By        string             `bson:"by" json:"by"`
+	Content   string             `bson:"suggestion" json:"content"`
+	Reply     string             `bson:"reply" json:"reply"`
+	Tags      []string           `bson:"tags,omitempty" json:"tags"` // Omit if nil
+	Views     int                `bson:"views" json:"views"`
+	Status    string             `bson:"status" json:"status"`
+	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	Parent    string             `bson:"parent,omitempty" json:"parent"`
 }
 
 type Vote struct {

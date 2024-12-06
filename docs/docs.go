@@ -491,12 +491,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Vote data including suggestion ID and content",
+                        "description": "Vote data with suggestion ID",
                         "name": "vote",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Vote"
+                            "type": "object"
                         }
                     }
                 ],
@@ -504,7 +504,10 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully added or updated vote",
                         "schema": {
-                            "$ref": "#/definitions/models.Vote"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
@@ -625,6 +628,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "parent": {
+                    "type": "string"
+                },
                 "reply": {
                     "type": "string"
                 },
@@ -656,26 +662,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Vote": {
-            "type": "object",
-            "properties": {
-                "by": {
-                    "type": "string"
-                },
-                "content": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "suggestionId": {
-                    "type": "string"
-                },
-                "type": {
                     "type": "string"
                 }
             }

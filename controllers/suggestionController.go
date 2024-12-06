@@ -27,8 +27,8 @@ import (
 func PostSuggestion(c *gin.Context) {
 	// Struct for capturing input data
 	var input struct {
-		Suggestion string   `json:"suggestion" binding:"required"`
-		Tags       []string `json:"tags"`
+		Content string   `json:"content" binding:"required"`
+		Tags    []string `json:"tags"`
 	}
 
 	// Get the claims from the context
@@ -55,13 +55,13 @@ func PostSuggestion(c *gin.Context) {
 
 	// Initialize the Suggestion model with input fields and default values
 	suggestion := models.Suggestion{
-		Suggestion: input.Suggestion,
-		By:         username,   // Use username instead of regnumber
-		Tags:       input.Tags, // Optional field, will be empty string if not provided
-		Reply:      "",         // Default
-		Views:      0,          // Default
-		Status:     "pending",  // Default
-		CreatedAt:  time.Now(),
+		Content:   input.Content,
+		By:        username,   // Use username instead of regnumber
+		Tags:      input.Tags, // Optional field, will be empty string if not provided
+		Reply:     "",         // Default
+		Views:     0,          // Default
+		Status:    "pending",  // Default
+		CreatedAt: time.Now(),
 	}
 
 	// Call the service layer to save the suggestion
