@@ -229,5 +229,27 @@ func AddVote(vote *models.Vote) (*models.Vote, error) {
 		return nil, fmt.Errorf("error while inserting vote: %v", err)
 	}
 
+	// Check the status of the suggestion
+	if suggestion["status"] == "pending" {
+		// Count the number of upvotes for this suggestion
+		upvoteCount, err := votesCollection.CountDocuments(ctx, bson.M{
+			"suggestionId": vote.SuggestionId,
+			"type":         "upvote",
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error while counting upvotes: %v", err)
+		}
+
+		// If the upvotes are 100 or more, update the status to "submitted"
+		if upvoteCount >= 100 {
+			_, err := suggestionsCollection.UpdateOne(ctx, bson.M{"_id": suggestionID}, bson.M{
+				"$set": bson.M{"status": "submitted"},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("error while updating suggestion status: %v", err)
+			}
+		}
+	}
+
 	return vote, nil
 }
