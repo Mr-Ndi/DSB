@@ -198,3 +198,45 @@ func RegisterAdmin(c *gin.Context) {
 		"message": "Admin created successfully",
 	})
 }
+
+// AdminLoginRequest represents the structure for admin login credentials.
+type AdminLoginRequest struct {
+	Role     string `json:"role" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// AdminLogin handles admin login.
+// @Summary Admin login
+// @Description Login for admin using role and password
+// @Tags admins
+// @Accept json
+// @Produce json
+// @Param credentials body AdminLoginRequest true "Admin login credentials"
+// @Success 200 {object} map[string]interface{} "Login successful"
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /admin/login [post]
+func AdminLogin(c *gin.Context) {
+	var loginRequest AdminLoginRequest
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate and authenticate admin
+	admin, err := services.AdminLogin(loginRequest.Role, loginRequest.Password)
+	if err != nil {
+		if err.Error() == "admin not found" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"role":    admin.Role,
+		"message": "Admin login successful",
+	})
+}

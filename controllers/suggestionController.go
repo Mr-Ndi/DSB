@@ -13,17 +13,17 @@ import (
 
 // PostSuggestion godoc
 // @Summary Create a new suggestion
-// @Description Add a new suggestion to the system with optional tags. Requires authentication.
-// @Tags Suggestions
+// @Description Add a new suggestion for the authenticated user
+// @Tags suggestions
 // @Accept json
 // @Produce json
-// @Param Authorization header string true "Bearer token"
-// @Param suggestion body PostSuggestionInput true "Suggestion input"
-// @Success 201 {object} models.Suggestion "Created suggestion"
-// @Failure 400 {object} gin.H "Bad request"
-// @Failure 401 {object} gin.H "Unauthorized"
-// @Failure 500 {object} gin.H "Internal server error"
-// @Router /suggestion [post]
+// @Param Authorization header string true "Bearer JWT Token"
+// @Param suggestion body PostSuggestionInput true "Suggestion Details"
+// @Success 201 {object} models.Suggestion "Successfully created suggestion"
+// @Failure 400 {object} map[string]string "Bad Request - Invalid input"
+// @Failure 401 {object} map[string]string "Unauthorized - Invalid token"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /suggestions [post]
 func PostSuggestion(c *gin.Context) {
 	// Struct for capturing input data
 	var input struct {
@@ -76,6 +76,14 @@ func PostSuggestion(c *gin.Context) {
 	c.JSON(http.StatusCreated, createdSuggestion)
 }
 
+// GetAllSuggestions godoc
+// @Summary Retrieve all suggestions
+// @Description Get a list of all suggestions in the system
+// @Tags suggestions
+// @Produce json
+// @Success 200 {array} models.Suggestion "Successfully retrieved suggestions"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /suggestions [get]
 func GetAllSuggestions(c *gin.Context) {
 	// Call the service to get all suggestions
 	suggestions, err := services.FindAllSuggestions()
@@ -89,6 +97,16 @@ func GetAllSuggestions(c *gin.Context) {
 	c.JSON(http.StatusOK, suggestions)
 }
 
+// GetSuggestionsByUser godoc
+// @Summary Get suggestions by username
+// @Description Retrieve all suggestions submitted by a specific user
+// @Tags suggestions
+// @Produce json
+// @Param username path string true "Username"
+// @Success 200 {array} models.Suggestion "Successfully retrieved user suggestions"
+// @Failure 400 {object} map[string]string "Bad Request - Missing username"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /suggestions/user/{username} [get]
 func GetSuggestionsByUser(c *gin.Context) {
 	// Extract the username from the path parameters
 	username := c.Param("username")
@@ -109,6 +127,17 @@ func GetSuggestionsByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, suggestions)
 }
 
+// GetSuggestionWithTag godoc
+// @Summary Get suggestions by tag/role
+// @Description Retrieve suggestions filtered by a specific tag or role
+// @Tags suggestions
+// @Produce json
+// @Param role path string true "Role/Tag"
+// @Success 200 {array} models.Suggestion "Successfully retrieved suggestions"
+// @Success 404 {object} map[string]string "No suggestions found for the tag"
+// @Failure 400 {object} map[string]string "Bad Request - Missing role"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /suggestions/tag/{role} [get]
 func GetSuggestionWithTag(c *gin.Context) {
 	// Get the tag (role) from path parameters
 	tag := c.Param("role")

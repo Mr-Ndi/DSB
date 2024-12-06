@@ -1,4 +1,14 @@
 definitions:
+  controllers.AdminLoginRequest:
+    properties:
+      password:
+        type: string
+      role:
+        type: string
+    required:
+    - password
+    - role
+    type: object
   controllers.AdminRequest:
     properties:
       password:
@@ -14,6 +24,49 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  controllers.PostSuggestionInput:
+    properties:
+      by:
+        description: Example input
+        example: 123
+        type: integer
+      suggestion:
+        description: Example input
+        example: This is a suggestion
+        type: string
+      tags:
+        description: Example input
+        example:
+        - '["tag1"'
+        - ' "tag2"]'
+        items:
+          type: string
+        type: array
+    type: object
+  models.Suggestion:
+    properties:
+      by:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      reply:
+        type: string
+      status:
+        type: string
+      suggestion:
+        type: string
+      tags:
+        description: Omit if nil
+        items:
+          type: string
+        type: array
+      views:
+        type: integer
+      votes:
+        type: integer
     type: object
   models.User:
     properties:
@@ -62,6 +115,47 @@ paths:
       summary: Register a new admin
       tags:
       - admins
+  /admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Login for admin using role and password
+      parameters:
+      - description: Admin login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.AdminLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Admin login
+      tags:
+      - admins
   /login:
     post:
       consumes:
@@ -108,11 +202,148 @@ paths:
       summary: User login
       tags:
       - users
+  /suggestions:
+    get:
+      description: Get a list of all suggestions in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved suggestions
+          schema:
+            items:
+              $ref: '#/definitions/models.Suggestion'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Retrieve all suggestions
+      tags:
+      - suggestions
+    post:
+      consumes:
+      - application/json
+      description: Add a new suggestion for the authenticated user
+      parameters:
+      - description: Bearer JWT Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Suggestion Details
+        in: body
+        name: suggestion
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.PostSuggestionInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created suggestion
+          schema:
+            $ref: '#/definitions/models.Suggestion'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized - Invalid token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new suggestion
+      tags:
+      - suggestions
+  /suggestions/tag/{role}:
+    get:
+      description: Retrieve suggestions filtered by a specific tag or role
+      parameters:
+      - description: Role/Tag
+        in: path
+        name: role
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved suggestions
+          schema:
+            items:
+              $ref: '#/definitions/models.Suggestion'
+            type: array
+        "400":
+          description: Bad Request - Missing role
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: No suggestions found for the tag
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get suggestions by tag/role
+      tags:
+      - suggestions
+  /suggestions/user/{username}:
+    get:
+      description: Retrieve all suggestions submitted by a specific user
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user suggestions
+          schema:
+            items:
+              $ref: '#/definitions/models.Suggestion'
+            type: array
+        "400":
+          description: Bad Request - Missing username
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get suggestions by username
+      tags:
+      - suggestions
   /user:
     post:
       consumes:
       - application/json
-      description: Create a new user with username, registration number and password
+      description: Create a new user with username, registration number, and password
       parameters:
       - description: User data
         in: body
@@ -130,6 +361,12 @@ paths:
             type: object
         "400":
           description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: 'Conflict: User already exists'
           schema:
             additionalProperties:
               type: string
