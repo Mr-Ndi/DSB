@@ -156,8 +156,15 @@ func RegisterAdmin(c *gin.Context) {
 
 	// Validate role
 	allowedRoles := map[string]bool{
-		"admin":     true,
-		"moderator": true,
+		"CompusAdmin":    true,
+		"Principal":      true,
+		"Dean":           true,
+		"Hod-CS":         true,
+		"Hod-CSE":        true,
+		"Hod-IS":         true,
+		"Hod-IT":         true,
+		"Register":       true,
+		"GuildPresident": true,
 	}
 	if !allowedRoles[adminRequest.Role] {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role provided"})
