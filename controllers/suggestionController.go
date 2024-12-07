@@ -25,21 +25,21 @@ import (
 // @Failure 401 {object} map[string]string "Unauthorized - Invalid token"
 // @Failure 500 {object} map[string]string "Internal Server Error"
 // @Router /suggestions [post]
+// PostSuggestion handles the creation of a new suggestion
 func PostSuggestion(c *gin.Context) {
-	// Struct for capturing input data
 	var input struct {
 		Content string   `json:"content" binding:"required"`
 		Tags    []string `json:"tags"`
 	}
 
-	// Get the claims from the context
+	// Get claims from context
 	claims, ok := c.Get("claims")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
 		return
 	}
 
-	// Extract the username from the claims
+	// Extract username from claims
 	claimsMap := claims.(jwt.MapClaims)
 	username, ok := claimsMap["username"].(string)
 	if !ok {
@@ -47,34 +47,82 @@ func PostSuggestion(c *gin.Context) {
 		return
 	}
 
-	// Bind the incoming JSON request body to the input struct
 	if err := c.ShouldBindJSON(&input); err != nil {
-		// Return bad request if validation fails
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Initialize the Suggestion model with input fields and default values
 	suggestion := models.Suggestion{
 		Content:   input.Content,
-		By:        username,   // Use username instead of regnumber
-		Tags:      input.Tags, // Optional field, will be empty string if not provided
-		Reply:     "",         // Default
-		Views:     0,          // Default
-		Status:    "pending",  // Default
+		By:        username,
+		Tags:      input.Tags,
+		Status:    "pending",
 		CreatedAt: time.Now(),
 	}
 
-	// Call the service layer to save the suggestion
+	user, err := services.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Check if user has reached the maximum number of suggestions allowed (3 in this case)
+	if user.SuggestionCount >= 3 {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You have reached the maximum number of suggestions allowed (3)"})
+		return
+	}
+
 	createdSuggestion, err := services.CreateSuggestion(&suggestion)
 	if err != nil {
-		// Return internal server error if creation fails
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Return the created suggestion with a 201 status code
-	c.JSON(http.StatusCreated, createdSuggestion)
+	user.SuggestionCount++                         // Increment user's suggestion count
+	err = services.UpdateUserSuggestionCount(user) // Update count in DB
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update suggestion count"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, createdSuggestion) // Return created suggestion
+}
+
+// GetUserSuggestions godoc
+// @Summary Get user's suggestion count and remaining allowed suggestions
+// @Description Returns the number of suggestions made by the user and how many they can still make
+// @Tags suggestions
+// @Param Authorization header string true "Bearer JWT Token"
+// @Success 200 {object} map[string]int "User's suggestion count and remaining allowed suggestions"
+// @Failure 401 {object} map[string]string "Unauthorized - Invalid token"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /suggestions/count [get]
+func GetUserSuggestions(c *gin.Context) {
+	claims, ok := c.Get("claims")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
+		return
+	}
+
+	claimsMap := claims.(jwt.MapClaims)
+	username, ok := claimsMap["username"].(string)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+		return
+	}
+
+	user, err := services.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found"})
+		return
+	}
+
+	remaining := 5 - user.SuggestionCount
+
+	c.JSON(http.StatusOK, gin.H{
+		"suggestion_count": user.SuggestionCount,
+		"remaining":        remaining,
+	})
 }
 
 // GetAllSuggestions godoc
@@ -331,7 +379,7 @@ type PostSuggestionInput struct {
 // GetAdminSuggestions retrieves suggestions tagged for admins with status "submitted".
 // @Summary Retrieve suggestions for admin
 // @Description Fetch all suggestions with status "submitted" that are tagged for the logged-in admin.
-// @Tags Admin Suggestions
+// @Tags admins
 // @Accept json
 // @Produce json
 // @Success 200 {array} models.Suggestion "List of suggestions tagged for the admin"
@@ -376,7 +424,7 @@ func GetAdminSuggestions(c *gin.Context) {
 // RespondToSuggestion allows an admin to respond to a suggestion.
 // @Summary Respond to a suggestion
 // @Description Allows an admin to submit a response to a specific suggestion.
-// @Tags Admin Responses
+// @Tags admins
 // @Accept json
 // @Produce json
 // @Param suggestionId path string true "Suggestion ID" // The ID of the suggestion being responded to

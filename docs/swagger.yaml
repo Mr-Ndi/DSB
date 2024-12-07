@@ -65,6 +65,8 @@ definitions:
     properties:
       by:
         type: string
+      content:
+        type: string
       createdAt:
         type: string
       id:
@@ -74,8 +76,6 @@ definitions:
       reply:
         type: string
       status:
-        type: string
-      suggestion:
         type: string
       tags:
         description: Omit if nil
@@ -90,6 +90,8 @@ definitions:
       password:
         type: string
       regnumber:
+        type: integer
+      suggestionCount:
         type: integer
       username:
         type: string
@@ -202,7 +204,7 @@ paths:
             type: object
       summary: Retrieve suggestions for admin
       tags:
-      - Admin Suggestions
+      - admins
   /admin/suggestions/{suggestionId}/respond:
     post:
       consumes:
@@ -247,7 +249,7 @@ paths:
             type: object
       summary: Respond to a suggestion
       tags:
-      - Admin Responses
+      - admins
   /login:
     post:
       consumes:
@@ -357,6 +359,38 @@ paths:
               type: string
             type: object
       summary: Create a new suggestion
+      tags:
+      - suggestions
+  /suggestions/count:
+    get:
+      description: Returns the number of suggestions made by the user and how many
+        they can still make
+      parameters:
+      - description: Bearer JWT Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: User's suggestion count and remaining allowed suggestions
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "401":
+          description: Unauthorized - Invalid token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user's suggestion count and remaining allowed suggestions
       tags:
       - suggestions
   /suggestions/tag/{role}:

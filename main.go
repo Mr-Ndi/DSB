@@ -48,7 +48,8 @@ func main() {
 
 	r.Use(RequestLogger) // Use the request logger middleware
 
-	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Swagger documentation route
+	// r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Swagger documentation route
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.DefaultModelsExpandDepth(-1))) // Swagger documentation route
 
 	port := os.Getenv("PORT") // Get PORT from environment variables
 	if port == "" {

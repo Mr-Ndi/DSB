@@ -140,7 +140,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Suggestions"
+                    "admins"
                 ],
                 "summary": "Retrieve suggestions for admin",
                 "responses": {
@@ -184,7 +184,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Responses"
+                    "admins"
                 ],
                 "summary": "Respond to a suggestion",
                 "parameters": [
@@ -386,6 +386,53 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/suggestions/count": {
+            "get": {
+                "description": "Returns the number of suggestions made by the user and how many they can still make",
+                "tags": [
+                    "suggestions"
+                ],
+                "summary": "Get user's suggestion count and remaining allowed suggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User's suggestion count and remaining allowed suggestions",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
                             }
                         }
                     },
@@ -758,6 +805,9 @@ const docTemplate = `{
                 "by": {
                     "type": "string"
                 },
+                "content": {
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -771,9 +821,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
-                },
-                "suggestion": {
                     "type": "string"
                 },
                 "tags": {
@@ -795,6 +842,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "regnumber": {
+                    "type": "integer"
+                },
+                "suggestionCount": {
                     "type": "integer"
                 },
                 "username": {
