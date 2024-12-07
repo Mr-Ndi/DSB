@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"dsb/models"
@@ -243,6 +244,81 @@ func HandleVote(c *gin.Context) {
 
 	// Respond with a success message
 	c.JSON(http.StatusOK, createdVote)
+}
+
+// PostComment godoc
+// @Summary Add a new comment
+// @Description Add a new comment to a suggestion or another comment
+// @Tags suggestions
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer JWT Token"
+// @Param suggestionId path string true "Parent Suggestion or Comment ID"
+// @Param comment body PostCommentInput true "Comment Details"
+// @Success 201 {object} models.Suggestion "Successfully created comment"
+// @Failure 400 {object} map[string]string "Bad Request - Invalid input"
+// @Failure 401 {object} map[string]string "Unauthorized - Invalid token"
+// @Failure 404 {object} map[string]string "Parent not found"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /suggestion/comment/{suggestionId} [post]
+func PostComment(c *gin.Context) {
+	// Get the suggestionId (parentId) from the URL path
+	parentID := c.Param("suggestionId")
+	if parentID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parent suggestionId is required"})
+		return
+	}
+
+	// Struct for capturing input data
+	var input struct {
+		Content string `json:"content" binding:"required"`
+	}
+
+	// Get the claims from the context
+	claims, ok := c.Get("claims")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
+		return
+	}
+
+	// Assert claims to jwt.MapClaims
+	claimsMap, ok := claims.(jwt.MapClaims)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+		return
+	}
+
+	// Extract the username from claims
+	username, ok := claimsMap["username"].(string)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+		return
+	}
+
+	// Bind the incoming JSON request body to the input struct
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Handle service-level errors and validations gracefully
+	comment, err := services.CreateComment(username, input.Content, parentID)
+	if err != nil {
+		if strings.Contains(err.Error(), "invalid parent ID format") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if strings.Contains(err.Error(), "does not exist") {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		// Internal errors
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process the request"})
+		return
+	}
+
+	// Return the created comment with a 201 status code
+	c.JSON(http.StatusCreated, comment)
 }
 
 // PostSuggestionInput is the struct used to document the input for the PostSuggestion endpoint

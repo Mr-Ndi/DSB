@@ -296,3 +296,50 @@ func AddResponse(response *models.Response) (*models.Response, error) {
 
 	return response, nil // Return created response or handle as needed.
 }
+
+func CreateComment(by string, content string, parentID string) (*models.Suggestion, error) {
+	// Access the suggestions collection
+	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
+
+	// Context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Validate parent ID format
+	parentObjectID, err := primitive.ObjectIDFromHex(parentID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid parent ID format: %v", err)
+	}
+
+	// Check if the parent suggestion or comment exists
+	var parent models.Suggestion
+	if err := suggestionsCollection.FindOne(ctx, bson.M{"_id": parentObjectID}).Decode(&parent); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("parent suggestion or comment with ID %s does not exist", parentID)
+		}
+		return nil, fmt.Errorf("error fetching parent suggestion: %v", err)
+	}
+
+	// Create the comment object
+	comment := models.Suggestion{
+		By:        by,
+		Content:   content,
+		Parent:    parentID,
+		Tags:      nil,           // No tags for comments by default
+		Reply:     "",            // No reply for comments by default
+		Views:     0,             // Not applicable for comments
+		Status:    parent.Status, // Inherit status from parent
+		CreatedAt: time.Now(),
+	}
+
+	// Insert the comment into the collection
+	result, err := suggestionsCollection.InsertOne(ctx, comment)
+	if err != nil {
+		return nil, fmt.Errorf("error inserting comment: %v", err)
+	}
+
+	// Assign the generated ID to the comment
+	comment.Id = result.InsertedID.(primitive.ObjectID)
+
+	return &comment, nil
+}
