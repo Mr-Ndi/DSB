@@ -312,7 +312,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/suggestions": {
+        "/suggestion": {
             "get": {
                 "description": "Get a list of all suggestions in the system",
                 "produces": [
@@ -322,6 +322,15 @@ const docTemplate = `{
                     "suggestions"
                 ],
                 "summary": "Retrieve all suggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successfully retrieved suggestions",
@@ -391,6 +400,90 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized - Invalid token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/suggestion/comment/{suggestionId}": {
+            "post": {
+                "description": "Add a new comment to a suggestion or another comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "suggestions"
+                ],
+                "summary": "Add a new comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parent Suggestion or Comment ID",
+                        "name": "suggestionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Comment Details",
+                        "name": "comment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.PostCommentInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created comment",
+                        "schema": {
+                            "$ref": "#/definitions/models.Suggestion"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Parent not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -746,6 +839,15 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "controllers.PostCommentInput": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Oroha!!??"
                 }
             }
         },

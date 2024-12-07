@@ -25,6 +25,12 @@ definitions:
       username:
         type: string
     type: object
+  controllers.PostCommentInput:
+    properties:
+      content:
+        example: Oroha!!??
+        type: string
+    type: object
   controllers.PostSuggestionInput:
     properties:
       by:
@@ -296,9 +302,15 @@ paths:
       summary: User login
       tags:
       - users
-  /suggestions:
+  /suggestion:
     get:
       description: Get a list of all suggestions in the system
+      parameters:
+      - description: Bearer JWT Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -359,6 +371,62 @@ paths:
               type: string
             type: object
       summary: Create a new suggestion
+      tags:
+      - suggestions
+  /suggestion/comment/{suggestionId}:
+    post:
+      consumes:
+      - application/json
+      description: Add a new comment to a suggestion or another comment
+      parameters:
+      - description: Bearer JWT Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Parent Suggestion or Comment ID
+        in: path
+        name: suggestionId
+        required: true
+        type: string
+      - description: Comment Details
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.PostCommentInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created comment
+          schema:
+            $ref: '#/definitions/models.Suggestion'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized - Invalid token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Parent not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a new comment
       tags:
       - suggestions
   /suggestions/count:

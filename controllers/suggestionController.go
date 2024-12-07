@@ -24,7 +24,7 @@ import (
 // @Failure 400 {object} map[string]string "Bad Request - Invalid input"
 // @Failure 401 {object} map[string]string "Unauthorized - Invalid token"
 // @Failure 500 {object} map[string]string "Internal Server Error"
-// @Router /suggestions [post]
+// @Router /suggestion [post]
 // PostSuggestion handles the creation of a new suggestion
 func PostSuggestion(c *gin.Context) {
 	var input struct {
@@ -130,9 +130,10 @@ func GetUserSuggestions(c *gin.Context) {
 // @Description Get a list of all suggestions in the system
 // @Tags suggestions
 // @Produce json
+// @Param Authorization header string true "Bearer JWT Token"
 // @Success 200 {array} models.Suggestion "Successfully retrieved suggestions"
 // @Failure 500 {object} map[string]string "Internal Server Error"
-// @Router /suggestions [get]
+// @Router /suggestion [get]
 func GetAllSuggestions(c *gin.Context) {
 	// Call the service to get all suggestions
 	suggestions, err := services.FindAllSuggestions()
@@ -374,6 +375,10 @@ type PostSuggestionInput struct {
 	Suggestion string   `json:"suggestion" example:"This is a suggestion"` // Example input
 	By         int      `json:"by" example:"123"`                          // Example input
 	Tags       []string `json:"tags" example:"[\"tag1\", \"tag2\"]"`       // Example input
+}
+
+type PostCommentInput struct {
+	Content string `json:"content" example:"Oroha!!??"`
 }
 
 // GetAdminSuggestions retrieves suggestions tagged for admins with status "submitted".
