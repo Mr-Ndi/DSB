@@ -296,3 +296,32 @@ func AddResponse(response *models.Response) (*models.Response, error) {
 
 	return response, nil // Return created response or handle as needed.
 }
+
+// GetUserByUsername retrieves a user by their username
+func GetUserByUsername(username string) (*models.User, error) {
+	ctx := context.TODO() // Create a context for the database operation
+
+	var user models.User
+	// Use config.DatabaseClient instead of client
+	err := config.DatabaseClient.Database("DSBox").Collection("users").FindOne(ctx, bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving user: %v", err) // Provide more context in errors
+	}
+
+	return &user, nil
+}
+
+// UpdateUserSuggestionCount updates the user's suggestion count in the database
+func UpdateUserSuggestionCount(user *models.User) error {
+	ctx := context.TODO() // Create a context for the database operation
+
+	if _, err := config.DatabaseClient.Database("DSBox").Collection("users").UpdateOne(
+		ctx,
+		bson.M{"username": user.Username},
+		bson.M{"$set": bson.M{"suggestion_count": user.SuggestionCount}},
+	); err != nil {
+		return fmt.Errorf("error updating user suggestion count: %v", err)
+	}
+
+	return nil
+}

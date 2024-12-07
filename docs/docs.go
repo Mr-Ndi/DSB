@@ -410,6 +410,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/suggestions/count": {
+            "get": {
+                "description": "Returns the number of suggestions made by the user and how many they can still make",
+                "tags": [
+                    "suggestions"
+                ],
+                "summary": "Get user's suggestion count and remaining allowed suggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User's suggestion count and remaining allowed suggestions",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/suggestions/tag/{role}": {
             "get": {
                 "description": "Retrieve suggestions filtered by a specific tag or role",
@@ -795,6 +842,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "regnumber": {
+                    "type": "integer"
+                },
+                "suggestionCount": {
                     "type": "integer"
                 },
                 "username": {
