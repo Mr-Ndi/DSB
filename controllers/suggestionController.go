@@ -255,7 +255,7 @@ type PostSuggestionInput struct {
 // GetAdminSuggestions retrieves suggestions tagged for admins with status "submitted".
 // @Summary Retrieve suggestions for admin
 // @Description Fetch all suggestions with status "submitted" that are tagged for the logged-in admin.
-// @Tags Admin Suggestions
+// @Tags admins
 // @Accept json
 // @Produce json
 // @Success 200 {array} models.Suggestion "List of suggestions tagged for the admin"
@@ -300,7 +300,7 @@ func GetAdminSuggestions(c *gin.Context) {
 // RespondToSuggestion allows an admin to respond to a suggestion.
 // @Summary Respond to a suggestion
 // @Description Allows an admin to submit a response to a specific suggestion.
-// @Tags Admin Responses
+// @Tags admins
 // @Accept json
 // @Produce json
 // @Param suggestionId path string true "Suggestion ID" // The ID of the suggestion being responded to

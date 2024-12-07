@@ -65,6 +65,8 @@ definitions:
     properties:
       by:
         type: string
+      content:
+        type: string
       createdAt:
         type: string
       id:
@@ -74,8 +76,6 @@ definitions:
       reply:
         type: string
       status:
-        type: string
-      suggestion:
         type: string
       tags:
         description: Omit if nil
@@ -202,7 +202,7 @@ paths:
             type: object
       summary: Retrieve suggestions for admin
       tags:
-      - Admin Suggestions
+      - admins
   /admin/suggestions/{suggestionId}/respond:
     post:
       consumes:
@@ -247,7 +247,7 @@ paths:
             type: object
       summary: Respond to a suggestion
       tags:
-      - Admin Responses
+      - admins
   /login:
     post:
       consumes:

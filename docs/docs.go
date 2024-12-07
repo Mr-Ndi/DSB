@@ -140,7 +140,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Suggestions"
+                    "admins"
                 ],
                 "summary": "Retrieve suggestions for admin",
                 "responses": {
@@ -184,7 +184,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Responses"
+                    "admins"
                 ],
                 "summary": "Respond to a suggestion",
                 "parameters": [
@@ -758,6 +758,9 @@ const docTemplate = `{
                 "by": {
                     "type": "string"
                 },
+                "content": {
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -771,9 +774,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
-                },
-                "suggestion": {
                     "type": "string"
                 },
                 "tags": {

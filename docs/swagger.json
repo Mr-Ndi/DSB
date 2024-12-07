@@ -129,7 +129,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Suggestions"
+                    "admins"
                 ],
                 "summary": "Retrieve suggestions for admin",
                 "responses": {
@@ -173,7 +173,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Responses"
+                    "admins"
                 ],
                 "summary": "Respond to a suggestion",
                 "parameters": [
@@ -747,6 +747,9 @@
                 "by": {
                     "type": "string"
                 },
+                "content": {
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -760,9 +763,6 @@
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
-                },
-                "suggestion": {
                     "type": "string"
                 },
                 "tags": {
