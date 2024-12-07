@@ -65,8 +65,9 @@ func PostSuggestion(c *gin.Context) {
 		return
 	}
 
-	if user.SuggestionCount >= 5 {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You have reached the maximum number of suggestions allowed (5)"})
+	// Check if user has reached the maximum number of suggestions allowed (3 in this case)
+	if user.SuggestionCount >= 3 {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You have reached the maximum number of suggestions allowed (3)"})
 		return
 	}
 
@@ -76,14 +77,14 @@ func PostSuggestion(c *gin.Context) {
 		return
 	}
 
-	user.SuggestionCount++
-	err = services.UpdateUserSuggestionCount(user)
+	user.SuggestionCount++                         // Increment user's suggestion count
+	err = services.UpdateUserSuggestionCount(user) // Update count in DB
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update suggestion count"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, createdSuggestion)
+	c.JSON(http.StatusCreated, createdSuggestion) // Return created suggestion
 }
 
 // GetUserSuggestions godoc
