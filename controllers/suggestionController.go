@@ -187,7 +187,7 @@ func GetSuggestionsByUser(c *gin.Context) {
 // @Success 404 {object} map[string]string "No suggestions found for the tag"
 // @Failure 400 {object} map[string]string "Bad Request - Missing role"
 // @Failure 500 {object} map[string]string "Internal Server Error"
-// @Router /suggestions/tag/{role} [get]
+// @Router /suggestion/tag/{role} [get]
 func GetSuggestionWithTag(c *gin.Context) {
 	// Get the tag (role) from path parameters
 	tag := c.Param("role")
@@ -226,7 +226,7 @@ func GetSuggestionWithTag(c *gin.Context) {
 // @Failure 404 {object} map[string]string "Username missing in claims, or suggestion not found"
 // @Failure 409 {object} map[string]string "You have already voted with the same type"
 // @Failure 500 {object} map[string]string "Internal Server Error"
-// @Router /votes/{type} [post]
+// @Router /vote/{type} [post]
 //
 // @BodyExample json { "suggestionId": "12345" }
 func HandleVote(c *gin.Context) {

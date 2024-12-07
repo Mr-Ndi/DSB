@@ -429,39 +429,7 @@ paths:
       summary: Add a new comment
       tags:
       - suggestions
-  /suggestions/count:
-    get:
-      description: Returns the number of suggestions made by the user and how many
-        they can still make
-      parameters:
-      - description: Bearer JWT Token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      responses:
-        "200":
-          description: User's suggestion count and remaining allowed suggestions
-          schema:
-            additionalProperties:
-              type: integer
-            type: object
-        "401":
-          description: Unauthorized - Invalid token
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get user's suggestion count and remaining allowed suggestions
-      tags:
-      - suggestions
-  /suggestions/tag/{role}:
+  /suggestion/tag/{role}:
     get:
       description: Retrieve suggestions filtered by a specific tag or role
       parameters:
@@ -498,6 +466,38 @@ paths:
               type: string
             type: object
       summary: Get suggestions by tag/role
+      tags:
+      - suggestions
+  /suggestions/count:
+    get:
+      description: Returns the number of suggestions made by the user and how many
+        they can still make
+      parameters:
+      - description: Bearer JWT Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: User's suggestion count and remaining allowed suggestions
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "401":
+          description: Unauthorized - Invalid token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user's suggestion count and remaining allowed suggestions
       tags:
       - suggestions
   /suggestions/user/{username}:
@@ -574,7 +574,7 @@ paths:
       summary: Create a new user
       tags:
       - users
-  /votes/{type}:
+  /vote/{type}:
     post:
       consumes:
       - application/json

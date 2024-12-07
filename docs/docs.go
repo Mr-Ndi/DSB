@@ -503,54 +503,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/suggestions/count": {
-            "get": {
-                "description": "Returns the number of suggestions made by the user and how many they can still make",
-                "tags": [
-                    "suggestions"
-                ],
-                "summary": "Get user's suggestion count and remaining allowed suggestions",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer JWT Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User's suggestion count and remaining allowed suggestions",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Invalid token",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/suggestions/tag/{role}": {
+        "/suggestion/tag/{role}": {
             "get": {
                 "description": "Retrieve suggestions filtered by a specific tag or role",
                 "produces": [
@@ -590,6 +543,53 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "No suggestions found for the tag",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/suggestions/count": {
+            "get": {
+                "description": "Returns the number of suggestions made by the user and how many they can still make",
+                "tags": [
+                    "suggestions"
+                ],
+                "summary": "Get user's suggestion count and remaining allowed suggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User's suggestion count and remaining allowed suggestions",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -721,7 +721,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/votes/{type}": {
+        "/vote/{type}": {
             "post": {
                 "description": "Allows a user to upvote or downvote a suggestion. If the user has already voted, it will update the vote type.",
                 "consumes": [
