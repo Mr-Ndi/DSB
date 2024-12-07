@@ -251,3 +251,107 @@ type PostSuggestionInput struct {
 	By         int      `json:"by" example:"123"`                          // Example input
 	Tags       []string `json:"tags" example:"[\"tag1\", \"tag2\"]"`       // Example input
 }
+
+// GetAdminSuggestions retrieves suggestions tagged for admins with status "submitted".
+// @Summary Retrieve suggestions for admin
+// @Description Fetch all suggestions with status "submitted" that are tagged for the logged-in admin.
+// @Tags Admin Suggestions
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.Suggestion "List of suggestions tagged for the admin"
+// @Failure 403 {object} map[string]string "Forbidden - User is not an admin"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /admin/suggestions [get]
+func GetAdminSuggestions(c *gin.Context) {
+	// Extract claims from the context (assuming you have middleware that sets this up)
+	userClaims, exists := c.Get("userClaims")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid claims"})
+		return
+	}
+
+	// Perform a type assertion to convert userClaims to a map[string]interface{}
+	claimsMap, ok := userClaims.(map[string]interface{})
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid claims format"})
+		return
+	}
+
+	// Check if user is an admin
+	role, exists := claimsMap["role"].(string)
+	if !exists || role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "User is not an admin"})
+		return
+	}
+
+	// Define the status you want to filter by (e.g., "submitted")
+	status := "submitted"
+
+	// Fetch suggestions tagged for this admin with the specified status
+	suggestions, err := services.FindSuggestionsByTag(role, status) // Adjust service function accordingly
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, suggestions)
+}
+
+// RespondToSuggestion allows an admin to respond to a suggestion.
+// @Summary Respond to a suggestion
+// @Description Allows an admin to submit a response to a specific suggestion.
+// @Tags Admin Responses
+// @Accept json
+// @Produce json
+// @Param suggestionId path string true "Suggestion ID" // The ID of the suggestion being responded to
+// @Param requestBody body models.Response true "Response content"
+// @Success 201 {object} models.Response "Successfully created response"
+// @Failure 403 {object} map[string]string "Forbidden - User is not an admin"
+// @Failure 400 {object} map[string]string "Bad Request - Invalid input"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /admin/suggestions/{suggestionId}/respond [post]
+func RespondToSuggestion(c *gin.Context) {
+	// Extract claims from context (assuming you have middleware that sets this up)
+	userClaims, exists := c.Get("userClaims")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid claims"})
+		return
+	}
+
+	// Perform type assertion on userClaims
+	claimsMap, ok := userClaims.(map[string]interface{})
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid claims format"})
+		return
+	}
+
+	// Check if user is an admin
+	role, exists := claimsMap["role"].(string)
+	if !exists || role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "User is not an admin"})
+		return
+	}
+
+	// Get the suggestion ID from URL parameters
+	suggestionID := c.Param("suggestionId")
+
+	// Parse the request body to get response content
+	var response models.Response
+	if err := c.ShouldBindJSON(&response); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Set additional fields for the response
+	response.SuggestionId = suggestionID
+	response.Admin = claimsMap["username"].(string) // Assuming username is in claims
+
+	// Call service function to save the response
+	createdResponse, err := services.AddResponse(&response)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, createdResponse)
+}

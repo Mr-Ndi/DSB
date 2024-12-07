@@ -44,6 +44,23 @@ definitions:
           type: string
         type: array
     type: object
+  models.Response:
+    properties:
+      admin:
+        description: Admin responding
+        type: string
+      content:
+        description: Response content
+        type: string
+      created_at:
+        description: Timestamp of the response
+        type: string
+      id:
+        type: string
+      suggestionId:
+        description: Reference to the suggestion
+        type: string
+    type: object
   models.Suggestion:
     properties:
       by:
@@ -156,6 +173,81 @@ paths:
       summary: Admin login
       tags:
       - admins
+  /admin/suggestions:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all suggestions with status "submitted" that are tagged for
+        the logged-in admin.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of suggestions tagged for the admin
+          schema:
+            items:
+              $ref: '#/definitions/models.Suggestion'
+            type: array
+        "403":
+          description: Forbidden - User is not an admin
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Retrieve suggestions for admin
+      tags:
+      - Admin Suggestions
+  /admin/suggestions/{suggestionId}/respond:
+    post:
+      consumes:
+      - application/json
+      description: Allows an admin to submit a response to a specific suggestion.
+      parameters:
+      - description: Suggestion ID
+        in: path
+        name: suggestionId
+        required: true
+        type: string
+      - description: Response content
+        in: body
+        name: requestBody
+        required: true
+        schema:
+          $ref: '#/definitions/models.Response'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created response
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - User is not an admin
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Respond to a suggestion
+      tags:
+      - Admin Responses
   /login:
     post:
       consumes:
