@@ -27,19 +27,20 @@ import (
 // @Router /suggestion [post]
 // PostSuggestion handles the creation of a new suggestion
 func PostSuggestion(c *gin.Context) {
+	// Struct for capturing input data
 	var input struct {
 		Content string   `json:"content" binding:"required"`
 		Tags    []string `json:"tags"`
 	}
 
-	// Get claims from context
+	// Get the claims from the context
 	claims, ok := c.Get("claims")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User unauthorized"})
 		return
 	}
 
-	// Extract username from claims
+	// Extract the username from the claims
 	claimsMap := claims.(jwt.MapClaims)
 	username, ok := claimsMap["username"].(string)
 	if !ok {
@@ -47,45 +48,34 @@ func PostSuggestion(c *gin.Context) {
 		return
 	}
 
+	// Bind the incoming JSON request body to the input struct
 	if err := c.ShouldBindJSON(&input); err != nil {
+		// Return bad request if validation fails
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Initialize the Suggestion model with input fields and default values
 	suggestion := models.Suggestion{
 		Content:   input.Content,
-		By:        username,
-		Tags:      input.Tags,
-		Status:    "pending",
+		By:        username,   // Use username instead of regnumber
+		Tags:      input.Tags, // Optional field, will be empty string if not provided
+		Reply:     "",         // Default
+		Views:     0,          // Default
+		Status:    "pending",  // Default
 		CreatedAt: time.Now(),
 	}
 
-	user, err := services.GetUserByUsername(username)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found"})
-		return
-	}
-
-	// Check if user has reached the maximum number of suggestions allowed (3 in this case)
-	if user.SuggestionCount >= 3 {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You have reached the maximum number of suggestions allowed (3)"})
-		return
-	}
-
+	// Call the service layer to save the suggestion
 	createdSuggestion, err := services.CreateSuggestion(&suggestion)
 	if err != nil {
+		// Return internal server error if creation fails
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	user.SuggestionCount++                         // Increment user's suggestion count
-	err = services.UpdateUserSuggestionCount(user) // Update count in DB
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update suggestion count"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, createdSuggestion) // Return created suggestion
+	// Return the created suggestion with a 201 status code
+	c.JSON(http.StatusCreated, createdSuggestion)
 }
 
 // GetUserSuggestions godoc
