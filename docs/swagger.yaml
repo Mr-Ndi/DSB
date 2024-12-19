@@ -50,6 +50,18 @@ definitions:
           type: string
         type: array
     type: object
+  models.Comment:
+    properties:
+      by:
+        type: string
+      content:
+        type: string
+      id:
+        description: MongoDB ObjectID
+        type: string
+      parent:
+        type: string
+    type: object
   models.Response:
     properties:
       admin:
@@ -371,6 +383,52 @@ paths:
               type: string
             type: object
       summary: Create a new suggestion
+      tags:
+      - suggestions
+  /suggestion/{suggestionId}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all comments associated with a specific suggestion ID.
+      parameters:
+      - description: Suggestion ID
+        in: path
+        name: suggestionId
+        required: true
+        type: string
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of comments with selected fields only
+          schema:
+            items:
+              $ref: '#/definitions/models.Comment'
+            type: array
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found - No comments found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get comments for a suggestion
       tags:
       - suggestions
   /suggestion/comment/{suggestionId}:

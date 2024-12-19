@@ -562,6 +562,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/suggestion/{suggestionId}/comments": {
+            "get": {
+                "description": "Retrieves all comments associated with a specific suggestion ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "suggestions"
+                ],
+                "summary": "Get comments for a suggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Suggestion ID",
+                        "name": "suggestionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of comments with selected fields only",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Comment"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - No comments found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/suggestions/count": {
             "get": {
                 "description": "Returns the number of suggestions made by the user and how many they can still make",
@@ -874,6 +943,24 @@ const docTemplate = `{
                         "[\"tag1\"",
                         " \"tag2\"]"
                     ]
+                }
+            }
+        },
+        "models.Comment": {
+            "type": "object",
+            "properties": {
+                "by": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "MongoDB ObjectID",
+                    "type": "string"
+                },
+                "parent": {
+                    "type": "string"
                 }
             }
         },

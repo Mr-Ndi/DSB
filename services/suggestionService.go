@@ -372,3 +372,35 @@ func UpdateUserSuggestionCount(user *models.User) error {
 
 	return nil
 }
+
+func FindComments(suggestionId string) ([]models.Suggestion, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Create a filter to find suggestions with the specified parent ID
+	filter := bson.M{"parent": suggestionId}
+
+	// Query the database for comments
+	cursor, err := config.DatabaseClient.Database("DSBox").Collection("suggestion").Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error finding comments: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	var comments []models.Suggestion
+
+	// Iterate through the cursor and decode each document into a Suggestion struct
+	for cursor.Next(ctx) {
+		var comment models.Suggestion
+		if err := cursor.Decode(&comment); err != nil {
+			return nil, fmt.Errorf("error decoding comment: %v", err)
+		}
+		comments = append(comments, comment)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("cursor error: %v", err)
+	}
+
+	return comments, nil
+}

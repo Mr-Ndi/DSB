@@ -474,3 +474,49 @@ func RespondToSuggestion(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, createdResponse)
 }
+
+// GetComments retrieves all comments for a specific suggestion.
+// @Summary Get comments for a suggestion
+// @Description Retrieves all comments associated with a specific suggestion ID.
+// @Tags suggestions
+// @Accept json
+// @Produce json
+// @Param suggestionId path string true "Suggestion ID" // The ID of the suggestion to get comments for
+// @Param Authorization header string true "Bearer token for authorization"
+// @Success 200 {array} models.Comment "List of comments with selected fields only"
+// @Failure 400 {object} map[string]string "Bad Request - Invalid input"
+// @Failure 404 {object} map[string]string "Not Found - No comments found"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /suggestion/{suggestionId}/comments [get]
+func GetComments(c *gin.Context) {
+	// Get the suggestion ID from URL parameters
+	suggestionID := c.Param("suggestionId")
+
+	// Call the service function to find comments
+	comments, err := services.FindComments(suggestionID)
+	if err != nil {
+		// Handle internal server error
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if any comments were found
+	if len(comments) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No comments found"})
+		return
+	}
+
+	// Map the response to include only selected fields (id, content, by, and parent)
+	filteredComments := make([]map[string]interface{}, len(comments))
+	for i, comment := range comments {
+		filteredComments[i] = map[string]interface{}{
+			"id":      comment.Id.Hex(), // Convert ObjectID to string
+			"by":      comment.By,
+			"content": comment.Content,
+			"parent":  comment.Parent,
+		}
+	}
+
+	// Return the filtered list of comments
+	c.JSON(http.StatusOK, filteredComments)
+}

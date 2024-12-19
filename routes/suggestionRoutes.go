@@ -19,5 +19,5 @@ func SuggestionRoutes(r *gin.Engine) {
 	protected.POST("/admin/suggestions/:suggestionId/respond", controllers.RespondToSuggestion)
 	protected.POST("/suggestion/comment/:suggestionId", controllers.PostComment)
 	protected.GET("/suggestions/count", controllers.GetUserSuggestions)
-
+	protected.GET("/suggestion/:suggestionId/comments", controllers.GetComments)
 }

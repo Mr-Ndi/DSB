@@ -33,3 +33,10 @@ type Response struct {
 	Content      string    `bson:"content" json:"content"`           // Response content
 	CreatedAt    time.Time `bson:"created_at" json:"created_at"`     // Timestamp of the response
 }
+
+type Comment struct {
+	ID      primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"` // MongoDB ObjectID
+	By      string             `json:"by" bson:"by"`
+	Content string             `json:"content" bson:"content"`
+	Parent  string             `json:"parent" bson:"parent"`
+}
