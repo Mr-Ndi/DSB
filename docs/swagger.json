@@ -551,54 +551,7 @@
                 }
             }
         },
-        "/suggestions/count": {
-            "get": {
-                "description": "Returns the number of suggestions made by the user and how many they can still make",
-                "tags": [
-                    "suggestions"
-                ],
-                "summary": "Get user's suggestion count and remaining allowed suggestions",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer JWT Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User's suggestion count and remaining allowed suggestions",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Invalid token",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/suggestions/user/{username}": {
+        "/suggestion/user/{username}": {
             "get": {
                 "description": "Retrieve all suggestions submitted by a specific user",
                 "produces": [
@@ -629,6 +582,133 @@
                     },
                     "400": {
                         "description": "Bad Request - Missing username",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/suggestion/vote/{type}": {
+            "post": {
+                "description": "Allows a user to upvote or downvote a suggestion. If the user has already voted, it will update the vote type.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "votes"
+                ],
+                "summary": "Add or update a vote on a suggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vote type (upvote or downvote)",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vote data with suggestion ID",
+                        "name": "vote",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully added or updated vote",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or vote type",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Username missing in claims, or suggestion not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "You have already voted with the same type",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/suggestions/count": {
+            "get": {
+                "description": "Returns the number of suggestions made by the user and how many they can still make",
+                "tags": [
+                    "suggestions"
+                ],
+                "summary": "Get user's suggestion count and remaining allowed suggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User's suggestion count and remaining allowed suggestions",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -691,86 +771,6 @@
                     },
                     "409": {
                         "description": "Conflict: User already exists",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/vote/{type}": {
-            "post": {
-                "description": "Allows a user to upvote or downvote a suggestion. If the user has already voted, it will update the vote type.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "votes"
-                ],
-                "summary": "Add or update a vote on a suggestion",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Vote type (upvote or downvote)",
-                        "name": "type",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Vote data with suggestion ID",
-                        "name": "vote",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully added or updated vote",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body or vote type",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Username missing in claims, or suggestion not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "409": {
-                        "description": "You have already voted with the same type",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
