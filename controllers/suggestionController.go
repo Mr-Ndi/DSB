@@ -1,12 +1,12 @@
 package controllers
 
 import (
+	"dsb/models"
+	"dsb/services"
+	"log"
 	"net/http"
 	"strings"
 	"time"
-
-	"dsb/models"
-	"dsb/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -146,7 +146,7 @@ func GetAllSuggestions(c *gin.Context) {
 // @Success 200 {array} models.Suggestion "Successfully retrieved user suggestions"
 // @Failure 400 {object} map[string]string "Bad Request - Missing username"
 // @Failure 500 {object} map[string]string "Internal Server Error"
-// @Router /suggestions/user/{username} [get]
+// @Router /suggestion/user/{username} [get]
 func GetSuggestionsByUser(c *gin.Context) {
 	// Extract the username from the path parameters
 	username := c.Param("username")
@@ -154,7 +154,7 @@ func GetSuggestionsByUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Username is required"})
 		return
 	}
-
+	log.Printf("Received request for user: %s", username)
 	// Call the service to get suggestions by the username
 	suggestions, err := services.FindSuggestionsByUser(username)
 	if err != nil {
@@ -216,7 +216,7 @@ func GetSuggestionWithTag(c *gin.Context) {
 // @Failure 404 {object} map[string]string "Username missing in claims, or suggestion not found"
 // @Failure 409 {object} map[string]string "You have already voted with the same type"
 // @Failure 500 {object} map[string]string "Internal Server Error"
-// @Router /vote/{type} [post]
+// @Router /suggestion/vote/{type} [post]
 //
 // @BodyExample json { "suggestionId": "12345" }
 func HandleVote(c *gin.Context) {

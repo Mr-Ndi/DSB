@@ -526,39 +526,7 @@ paths:
       summary: Get suggestions by tag/role
       tags:
       - suggestions
-  /suggestions/count:
-    get:
-      description: Returns the number of suggestions made by the user and how many
-        they can still make
-      parameters:
-      - description: Bearer JWT Token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      responses:
-        "200":
-          description: User's suggestion count and remaining allowed suggestions
-          schema:
-            additionalProperties:
-              type: integer
-            type: object
-        "401":
-          description: Unauthorized - Invalid token
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get user's suggestion count and remaining allowed suggestions
-      tags:
-      - suggestions
-  /suggestions/user/{username}:
+  /suggestion/user/{username}:
     get:
       description: Retrieve all suggestions submitted by a specific user
       parameters:
@@ -591,48 +559,7 @@ paths:
       summary: Get suggestions by username
       tags:
       - suggestions
-  /user:
-    post:
-      consumes:
-      - application/json
-      description: Create a new user with username, registration number, and password
-      parameters:
-      - description: User data
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.User'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "409":
-          description: 'Conflict: User already exists'
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new user
-      tags:
-      - users
-  /vote/{type}:
+  /suggestion/vote/{type}:
     post:
       consumes:
       - application/json
@@ -686,4 +613,77 @@ paths:
       summary: Add or update a vote on a suggestion
       tags:
       - votes
+  /suggestions/count:
+    get:
+      description: Returns the number of suggestions made by the user and how many
+        they can still make
+      parameters:
+      - description: Bearer JWT Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: User's suggestion count and remaining allowed suggestions
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "401":
+          description: Unauthorized - Invalid token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user's suggestion count and remaining allowed suggestions
+      tags:
+      - suggestions
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with username, registration number, and password
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: 'Conflict: User already exists'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new user
+      tags:
+      - users
 swagger: "2.0"
