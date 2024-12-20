@@ -634,6 +634,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Bearer token for authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "description": "Vote data with suggestion ID",
                         "name": "vote",
                         "in": "body",

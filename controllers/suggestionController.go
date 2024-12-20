@@ -210,6 +210,7 @@ func GetSuggestionWithTag(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param type path string true "Vote type (upvote or downvote)"
+// @Param Authorization header string true "Bearer token for authorization"
 // @Param vote body object true "Vote data with suggestion ID" example({"suggestionId": "12345"})
 // @Success 200 {object} map[string]string "Successfully added or updated vote"
 // @Failure 400 {object} map[string]string "Invalid request body or vote type"

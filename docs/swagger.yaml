@@ -571,6 +571,11 @@ paths:
         name: type
         required: true
         type: string
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Vote data with suggestion ID
         in: body
         name: vote
