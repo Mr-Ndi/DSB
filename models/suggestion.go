@@ -40,3 +40,9 @@ type Comment struct {
 	Content string             `json:"content" bson:"content"`
 	Parent  string             `json:"parent" bson:"parent"`
 }
+
+type SuggestionWithVotes struct {
+	Suggestion Suggestion `json:"suggestion"`
+	Upvotes    int64      `json:"upvotes"`
+	Downvotes  int64      `json:"downvotes"`
+}

@@ -64,31 +64,74 @@ func CreateSuggestion(suggestion *models.Suggestion) (*models.Suggestion, error)
 	return suggestion, nil
 }
 
-func FindAllSuggestions() ([]models.Suggestion, error) {
-	// Access the suggestions collection
+func FindAllSuggestions() ([]map[string]interface{}, error) {
+	// Access the suggestions and votes collections
 	suggestionsCollection := config.DatabaseClient.Database("DSBox").Collection("suggestion")
+	votesCollection := config.DatabaseClient.Database("DSBox").Collection("vote")
 
 	// Context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Query all suggestions
-	cursor, err := suggestionsCollection.Find(ctx, bson.M{})
+	// Query filter: no parent and status in [pending, responded, submitted]
+	filter := bson.M{
+		"$and": []bson.M{
+			{"parent": bson.M{"$in": []interface{}{nil, ""}}},
+			{"status": bson.M{"$in": []string{"pending", "responded", "submitted"}}},
+		},
+	}
+
+	// Query all suggestions with the filter
+	cursor, err := suggestionsCollection.Find(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching suggestions: %v", err)
 	}
 	defer cursor.Close(ctx)
 
-	// Slice to hold all suggestions
-	var suggestions []models.Suggestion
+	// Slice to hold the response
+	var response []map[string]interface{}
 
-	// Iterate through the cursor and decode each suggestion into the slice
+	// Iterate through the cursor and decode each suggestion
 	for cursor.Next(ctx) {
 		var suggestion models.Suggestion
 		if err := cursor.Decode(&suggestion); err != nil {
 			return nil, fmt.Errorf("error decoding suggestion: %v", err)
 		}
-		suggestions = append(suggestions, suggestion)
+
+		// Count upvotes and downvotes
+		upvotes, err := votesCollection.CountDocuments(ctx, bson.M{
+			"suggestionId": suggestion.Id.Hex(),
+			"type":         "upvote",
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error counting upvotes for suggestion %s: %v", suggestion.Id.Hex(), err)
+		}
+
+		downvotes, err := votesCollection.CountDocuments(ctx, bson.M{
+			"suggestionId": suggestion.Id.Hex(),
+			"type":         "downvote",
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error counting downvotes for suggestion %s: %v", suggestion.Id.Hex(), err)
+		}
+
+		// Build the response map
+		suggestionResponse := map[string]interface{}{
+			"id":        suggestion.Id.Hex(),
+			"by":        suggestion.By,
+			"content":   suggestion.Content,
+			"reply":     suggestion.Reply,
+			"tags":      suggestion.Tags,
+			"views":     suggestion.Views,
+			"status":    suggestion.Status,
+			"createdAt": suggestion.CreatedAt,
+			"parent":    suggestion.Parent,
+			"upvotes":   upvotes,
+			"downvotes": downvotes,
+		}
+
+		// Append to the response slice
+		response = append(response, suggestionResponse)
 	}
 
 	// Check for cursor iteration error
@@ -96,8 +139,8 @@ func FindAllSuggestions() ([]models.Suggestion, error) {
 		return nil, fmt.Errorf("error iterating cursor: %v", err)
 	}
 
-	// Return the list of suggestions
-	return suggestions, nil
+	// Return the response
+	return response, nil
 }
 
 func FindSuggestionsByUser(username string) ([]models.Suggestion, error) {
