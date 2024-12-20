@@ -143,6 +143,7 @@ func GetAllSuggestions(c *gin.Context) {
 // @Tags suggestions
 // @Produce json
 // @Param username path string true "Username"
+// @Param Authorization header string true "Bearer token for authorization"
 // @Success 200 {array} models.Suggestion "Successfully retrieved user suggestions"
 // @Failure 400 {object} map[string]string "Bad Request - Missing username"
 // @Failure 500 {object} map[string]string "Internal Server Error"
