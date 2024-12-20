@@ -562,76 +562,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/suggestion/{suggestionId}/comments": {
-            "get": {
-                "description": "Retrieves all comments associated with a specific suggestion ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "suggestions"
-                ],
-                "summary": "Get comments for a suggestion",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Suggestion ID",
-                        "name": "suggestionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Bearer token for authorization",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of comments with selected fields only",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Comment"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request - Invalid input",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found - No comments found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/suggestions/count": {
+        "/suggestion/user/{username}": {
             "get": {
                 "description": "Retrieve all suggestions submitted by a specific user",
                 "produces": [
@@ -742,6 +673,75 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "You have already voted with the same type",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/suggestion/{suggestionId}/comments": {
+            "get": {
+                "description": "Retrieves all comments associated with a specific suggestion ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "suggestions"
+                ],
+                "summary": "Get comments for a suggestion",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Suggestion ID",
+                        "name": "suggestionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token for authorization",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of comments with selected fields only",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Comment"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - No comments found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
